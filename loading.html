@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0D0F12">
+<title>Cruxcut - 로딩 콘텐츠</title>
+<style>
+:root {
+  --bg: #0D0F12;
+  --card: #161A1F;
+  --stroke: rgba(255,255,255,.09);
+  --text: #F5F0E8;
+  --muted: #A8A29A;
+  --accent: #E74408;
+  --accent-hi: #FF6730;
+  --cream: #F5F0E8;
+  --green: #86A98F;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(245,240,232,.14), transparent 32%),
+    linear-gradient(180deg, #12151B 0%, var(--bg) 42%, #08090C 100%);
+  color: var(--text);
+  font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button, textarea, input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.app {
+  height: 100dvh;
+  padding: calc(env(safe-area-inset-top) + 56px) 16px calc(env(safe-area-inset-bottom) + 112px);
+}
+.cards {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 10px 0 28px;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 24px), transparent 100%);
+}
+.cards::-webkit-scrollbar { display: none; }
+.stack {
+  max-width: 460px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.flip-stage {
+  perspective: 1200px;
+}
+.flip-box {
+  position: relative;
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform .62s cubic-bezier(.2,.72,.2,1);
+}
+.flip-box.flipped {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  grid-area: 1 / 1;
+  min-height: 338px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-face.back {
+  transform: rotateY(180deg);
+}
+.card {
+  border-radius: 24px;
+  padding: 18px;
+  background: rgba(22,26,31,.86);
+  border: 1px solid var(--stroke);
+  box-shadow: 0 18px 44px rgba(0,0,0,.26);
+}
+.card.primary {
+  background:
+    linear-gradient(145deg, rgba(134,169,143,.36), rgba(255,255,255,.055)),
+    rgba(22,26,31,.9);
+}
+.card.feature {
+  background:
+    linear-gradient(145deg, rgba(231,68,8,.20), rgba(255,255,255,.055)),
+    rgba(22,26,31,.9);
+}
+.question {
+  font-size: clamp(23px, 7vw, 30px);
+  letter-spacing: -.2px;
+  line-height: 1.18;
+  margin-bottom: 10px;
+}
+.group {
+  margin-top: 16px;
+}
+.group-title {
+  margin-bottom: 8px;
+  color: rgba(245,240,232,.74);
+  font-size: 13px;
+  font-weight: 850;
+}
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  min-height: 38px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.075);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(245,240,232,.86);
+  font-size: 14px;
+  font-weight: 750;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease, color .12s ease;
+}
+.chip:active, .vote:active, .submit:active, .ghost-btn:active { transform: scale(.96); }
+.chip.selected {
+  color: #11100E;
+  background: var(--cream);
+  border-color: var(--cream);
+}
+.submit {
+  width: 100%;
+  min-height: 50px;
+  margin-top: 18px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-hi), var(--accent));
+  color: white;
+  font-size: 16px;
+  font-weight: 850;
+}
+.submit:disabled {
+  color: rgba(245,240,232,.45);
+  background: rgba(255,255,255,.075);
+}
+.tip-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.tag {
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: rgba(255,255,255,.08);
+  color: rgba(245,240,232,.74);
+  font-size: 12px;
+  font-weight: 750;
+}
+.ghost-btn {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 16px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+}
+.carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.carousel-body {
+  min-height: 184px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+.carousel-body.survey {
+  min-height: 236px;
+}
+.slide-eyebrow {
+  color: var(--accent-hi);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.slide-title {
+  margin-top: 10px;
+  font-size: 18px;
+  line-height: 1.28;
+  font-weight: 780;
+  letter-spacing: -.15px;
+}
+.slide-body {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-top: 8px;
+}
+.slide-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+.vote {
+  flex: 1;
+  min-height: 58px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--text);
+  font-size: 26px;
+  font-weight: 850;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.vote.selected {
+  background: rgba(255,103,48,.20);
+  border-color: rgba(255,103,48,.58);
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+.choice {
+  min-height: 48px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 14px;
+  text-align: center;
+}
+.choice.selected {
+  background: rgba(255,103,48,.20);
+  border-color: rgba(255,103,48,.58);
+}
+.idea-box {
+  width: 100%;
+  min-height: 116px;
+  resize: none;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  padding: 14px 16px;
+  line-height: 1.5;
+}
+.idea-box::placeholder {
+  color: rgba(245,240,232,.48);
+}
+.survey-submit {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-hi), var(--accent));
+  color: white;
+  font-size: 15px;
+  font-weight: 850;
+}
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(245,240,232,.22);
+  transition: width .18s ease, background .18s ease, transform .18s ease;
+}
+.carousel-dot.active {
+  width: 16px;
+  background: var(--cream);
+}
+.done-bar {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom) + 24px);
+  z-index: 20;
+  display: none;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 12px;
+  border-radius: 999px;
+  background: rgba(22,26,31,.94);
+  border: 1px solid var(--stroke);
+  box-shadow: 0 18px 44px rgba(0,0,0,.34);
+}
+.done-bar.show { display: block; animation: rise .25s ease; }
+.result-btn {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-hi), var(--accent));
+  color: white;
+  font-size: 16px;
+  font-weight: 850;
+}
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 88px);
+  z-index: 21;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(245,240,232,.94);
+  color: #15120F;
+  font-size: 13px;
+  font-weight: 800;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.show { opacity: 1; transform: translateX(-50%); }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+@media (min-width: 520px) {
+  .app { padding-left: 22px; padding-right: 22px; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="cards" id="cards">
+    <div class="stack">
+      <section class="flip-stage" aria-live="polite">
+        <div class="flip-box" id="crux-card">
+          <div class="card primary flip-face front" aria-labelledby="crux-question">
+            <h1 class="question" id="crux-question">방금 올린 등반의 크럭스는 무엇이었나요?</h1>
+
+            <div class="group">
+              <div class="group-title">[홀드]</div>
+              <div class="chip-grid" aria-label="크럭스 홀드 선택">
+                <button class="chip" data-group="hold" data-value="crimp">크림프</button>
+                <button class="chip" data-group="hold" data-value="sloper">슬로퍼</button>
+                <button class="chip" data-group="hold" data-value="pinch">핀치</button>
+                <button class="chip" data-group="hold" data-value="pocket">포켓</button>
+                <button class="chip" data-group="hold" data-value="jug">저그</button>
+                <button class="chip" data-group="hold" data-value="jamming">재밍</button>
+              </div>
+            </div>
+
+            <div class="group">
+              <div class="group-title">[기술]</div>
+              <div class="chip-grid" aria-label="크럭스 기술 선택">
+                <button class="chip" data-group="move" data-value="dyno">다이노</button>
+                <button class="chip" data-group="move" data-value="coordination">코디</button>
+                <button class="chip" data-group="move" data-value="heelhook">힐훅</button>
+                <button class="chip" data-group="move" data-value="toehook">토훅</button>
+                <button class="chip" data-group="move" data-value="kneebar">니바</button>
+                <button class="chip" data-group="move" data-value="flagging">플래깅</button>
+              </div>
+            </div>
+
+            <button class="submit" id="submit-crux" disabled>제출</button>
+          </div>
+
+          <div class="card flip-face back">
+            <div class="tip-tags" id="tip-tags"></div>
+            <h2 id="tip-title">크럭스 팁을 준비 중입니다.</h2>
+            <p id="tip-body">선택한 홀드와 기술 조합에 맞춰 짧은 팁을 보여드립니다.</p>
+            <button class="ghost-btn" id="choose-again">다시 고를래요</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card feature carousel" data-carousel="feature">
+        <div class="carousel-body" id="feature-body"></div>
+        <div class="carousel-dots" id="feature-dots" aria-label="기능 팁 진행 상태"></div>
+      </section>
+
+      <section class="card carousel" data-carousel="survey">
+        <div class="carousel-body survey" id="survey-body"></div>
+        <div class="carousel-dots" id="survey-dots" aria-label="기능 설문 진행 상태"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div id="done-bar" class="done-bar">
+  <button id="result-btn" class="result-btn">분석 결과 보기</button>
+</div>
+
+<script src="cliff-bridge.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var noop = function () {};
+  var Bridge = window.CliffBridge || {
+    inApp: false,
+    contentStart: noop,
+    contentEnd: noop,
+    isProcessingDone: function () { return false; },
+    onProcessingDone: noop,
+  };
+
+  var selected = { hold: null, move: null };
+  var holdTips = {
+    crimp: '크림프는 강하게 말아쥐기보다 첫 접촉을 조용하게 만드는 게 먼저입니다.',
+    sloper: '슬로퍼는 잡는 힘보다 몸 방향과 발 압력으로 마찰을 유지하는 게 중요합니다.',
+    pinch: '핀치는 엄지 힘만 쓰기보다 몸통 긴장으로 홀드를 오래 잠그는 게 좋습니다.',
+    pocket: '포켓은 깊이보다 당기는 방향이 중요합니다. 손가락이 비틀리지 않게 몸을 맞춰보세요.',
+    jug: '저그에서도 급하게 당기면 다음 동작이 무너집니다. 잡은 뒤 어깨를 낮춰 여유를 만드세요.',
+    jamming: '재밍은 통증을 버티는 기술이 아니라 면을 넓혀 고정하는 기술입니다. 손목 각도를 먼저 찾으세요.',
+  };
+  var moveTips = {
+    dyno: '다이노는 착지보다 이륙 각도가 먼저입니다. 마지막 발을 오래 누르고 골반을 목표 홀드 쪽으로 보내보세요.',
+    coordination: '코디는 한 번에 성공하려 하기보다 손, 발, 골반의 순서를 나눠보면 안정적입니다.',
+    heelhook: '힐훅은 뒤꿈치보다 무릎 방향이 먼저입니다. 무릎을 열어 당기는 방향을 만들어보세요.',
+    toehook: '토훅은 발끝을 거는 순간보다 당겨서 몸을 고정하는 시간이 중요합니다.',
+    kneebar: '니바는 다리 힘으로 버티기보다 무릎과 발 사이에 쐐기를 만드는 느낌이 좋습니다.',
+    flagging: '플래깅은 균형을 잡는 장식 동작이 아닙니다. 반대발로 회전을 미리 막아보세요.',
+  };
+  var comboTips = {
+    'sloper+dyno': {
+      title: '슬로퍼 + 다이노라면 뛰기 전 발 압력이 핵심입니다.',
+      body: '슬로퍼는 마찰을 잃으면 바로 빠집니다. 마지막 발을 오래 누르고, 손보다 골반이 먼저 목표 홀드 쪽으로 지나가게 해보세요.',
+    },
+    'crimp+dyno': {
+      title: '크림프 + 다이노는 잡은 뒤 버티는 시간을 줄여야 합니다.',
+      body: '착지 손에 오래 매달리면 손가락 부담이 커집니다. 발이 벽을 떠나는 순간부터 다음 발 위치까지 같이 정해두세요.',
+    },
+    'pocket+toehook': {
+      title: '포켓 + 토훅은 손가락이 비틀리지 않게 몸을 잠그세요.',
+      body: '토훅으로 몸을 고정한 뒤 포켓을 당기는 방향을 일정하게 유지하면 손가락 부담이 줄어듭니다.',
+    },
+    'pinch+coordination': {
+      title: '핀치 + 코디는 잡는 힘보다 타이밍 분리가 먼저입니다.',
+      body: '핀치를 잡는 순간 몸이 흔들리면 바로 빠집니다. 먼저 발 박자를 정하고 손은 마지막에 고정해보세요.',
+    },
+  };
+
+  var featureSlides = [
+    {
+      eyebrow: '알고 있었나요?',
+      title: '삼각대 영상을 들찍처럼 부드럽게 편집해줍니다.',
+      body: '손으로 들고 찍은 영상도 부드럽게 정리할 수 있어요.',
+    },
+    {
+      eyebrow: '스튜디오 탭',
+      title: 'Cruxcut은 가장 역동적인 하이라이트 구간을 자동 추출합니다.',
+      body: '분할된 컷을 꾹 눌러서 공유하세요.',
+    },
+    {
+      eyebrow: '기록 탭',
+      title: '동작별 메모가 가능합니다.',
+      body: '한 번의 등반을 더 잘 기억하고 다시 꺼내 볼 수 있어요.',
+    },
+  ];
+
+  var surveySlides = [
+    {
+      type: 'vote',
+      eyebrow: '기능 설문',
+      title: 'AI 자세 분석 기능 준비중',
+      survey: 'ai-posture',
+    },
+    {
+      type: 'vote',
+      eyebrow: '기능 설문',
+      title: '등반 기록 자동 생성 기능 준비중',
+      survey: 'auto-log',
+    },
+    {
+      type: 'vote',
+      eyebrow: '기능 설문',
+      title: '동작 소셜 피드백 기능 준비중',
+      survey: 'social-feedback',
+    },
+    {
+      type: 'choice',
+      eyebrow: '기능 설문',
+      title: '다음 중 가장 필요한 기능은?',
+      survey: 'priority',
+      options: ['AI 자세 피드백', '자동 편집', '등반 기록', '추천 문제'],
+    },
+    {
+      type: 'idea',
+      eyebrow: '기능 설문',
+      title: '당신의 아이디어를 개발자에게 건의해주세요!',
+      survey: 'idea',
+    },
+  ];
+
+  var carousels = {
+    feature: {
+      body: $('feature-body'),
+      dots: $('feature-dots'),
+      index: 0,
+      timer: null,
+      delay: 4200,
+      slides: featureSlides,
+    },
+    survey: {
+      body: $('survey-body'),
+      dots: $('survey-dots'),
+      index: 0,
+      timer: null,
+      delay: 5200,
+      slides: surveySlides,
+    },
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  function showToast(text) {
+    var toast = $('toast');
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(function () {
+      toast.classList.remove('show');
+    }, 1300);
+  }
+
+  function recordEvent(name, payload) {
+    var event = {
+      name: name,
+      payload: payload || {},
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      var prev = JSON.parse(localStorage.getItem('cruxcutLoadingEvents') || '[]');
+      prev.push(event);
+      localStorage.setItem('cruxcutLoadingEvents', JSON.stringify(prev.slice(-50)));
+    } catch (e) {
+      /* localStorage 비활성 환경에서는 화면 동작만 유지한다. */
+    }
+    window.dispatchEvent(new CustomEvent('cruxcut-loading-event', { detail: event }));
+  }
+
+  function labelFor(key) {
+    var labels = {
+      crimp: '크림프',
+      sloper: '슬로퍼',
+      pinch: '핀치',
+      pocket: '포켓',
+      jug: '저그',
+      jamming: '재밍',
+      dyno: '다이노',
+      coordination: '코디',
+      heelhook: '힐훅',
+      toehook: '토훅',
+      kneebar: '니바',
+      flagging: '플래깅',
+    };
+    return labels[key] || key;
+  }
+
+  function makeTag(text) {
+    var tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = text;
+    return tag;
+  }
+
+  function updateSelectionUI() {
+    $('submit-crux').disabled = !(selected.hold && selected.move);
+  }
+
+  function renderTip() {
+    var comboKey = selected.hold + '+' + selected.move;
+    var combo = comboTips[comboKey] || {
+      title: labelFor(selected.hold) + ' + ' + labelFor(selected.move) + ' 크럭스에서는 몸의 순서를 먼저 정하세요.',
+      body: holdTips[selected.hold] + ' ' + moveTips[selected.move],
+    };
+    var tags = $('tip-tags');
+    tags.innerHTML = '';
+    tags.appendChild(makeTag('[홀드] ' + labelFor(selected.hold)));
+    tags.appendChild(makeTag('[기술] ' + labelFor(selected.move)));
+    $('tip-title').textContent = combo.title;
+    $('tip-body').textContent = combo.body;
+  }
+
+  function updateProcessingDone() {
+    if (Bridge.inApp && Bridge.isProcessingDone()) {
+      $('done-bar').classList.add('show');
+    }
+  }
+
+  function resetTimer(name) {
+    clearTimeout(carousels[name].timer);
+    carousels[name].timer = setTimeout(function () {
+      goNext(name);
+    }, carousels[name].delay);
+  }
+
+  function goNext(name) {
+    var carousel = carousels[name];
+    carousel.index = (carousel.index + 1) % carousel.slides.length;
+    renderCarousel(name);
+    resetTimer(name);
+  }
+
+  function goTo(name, index) {
+    var carousel = carousels[name];
+    carousel.index = index;
+    renderCarousel(name);
+    resetTimer(name);
+  }
+
+  function renderDots(carousel) {
+    var html = '';
+    for (var i = 0; i < carousel.slides.length; i++) {
+      html += '<button class="carousel-dot' + (i === carousel.index ? ' active' : '') + '" data-carousel-dot="' + i + '" aria-label="카드 ' + (i + 1) + '"></button>';
+    }
+    carousel.dots.innerHTML = html;
+  }
+
+  function renderFeatureSlide(slide) {
+    return [
+      '<div class="slide-eyebrow">', slide.eyebrow, '</div>',
+      '<div class="slide-title">', slide.title, '</div>',
+      '<div class="slide-body">', slide.body, '</div>',
+    ].join('');
+  }
+
+  function renderSurveySlide(slide) {
+    if (slide.type === 'vote') {
+      return [
+        '<div class="slide-eyebrow">', slide.eyebrow, '</div>',
+        '<div class="slide-title">', slide.title, '</div>',
+        '<div class="slide-actions">',
+          '<button class="vote" data-survey-vote="up" data-survey-key="', slide.survey, '" aria-label="좋아요">👍</button>',
+          '<button class="vote" data-survey-vote="maybe" data-survey-key="', slide.survey, '" aria-label="글쎄요">🤷</button>',
+          '<button class="vote" data-survey-vote="down" data-survey-key="', slide.survey, '" aria-label="별로예요">👎</button>',
+        '</div>',
+      ].join('');
+    }
+
+    if (slide.type === 'choice') {
+      return [
+        '<div class="slide-eyebrow">', slide.eyebrow, '</div>',
+        '<div class="slide-title">', slide.title, '</div>',
+        '<div class="choice-grid">',
+          slide.options.map(function (option) {
+            return '<button class="choice" data-survey-choice="' + option + '">' + option + '</button>';
+          }).join(''),
+        '</div>',
+      ].join('');
+    }
+
+    return [
+      '<div class="slide-eyebrow">', slide.eyebrow, '</div>',
+      '<div class="slide-title">', slide.title, '</div>',
+      '<textarea class="idea-box" rows="4" placeholder="의견을 적어주세요"></textarea>',
+      '<button class="survey-submit" data-survey-send>보내기</button>',
+    ].join('');
+  }
+
+  function renderCarousel(name) {
+    var carousel = carousels[name];
+    var slide = carousel.slides[carousel.index];
+    carousel.body.innerHTML = name === 'feature' ? renderFeatureSlide(slide) : renderSurveySlide(slide);
+    renderDots(carousel);
+  }
+
+  function startCarousel(name) {
+    renderCarousel(name);
+    resetTimer(name);
+  }
+
+  document.querySelectorAll('.chip').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var group = button.getAttribute('data-group');
+      var value = button.getAttribute('data-value');
+      selected[group] = value;
+      document.querySelectorAll('[data-group="' + group + '"]').forEach(function (peer) {
+        peer.classList.toggle('selected', peer === button);
+      });
+      updateSelectionUI();
+      recordEvent('crux_tag_select', {
+        group: group,
+        value: value,
+        selected: { hold: selected.hold, move: selected.move },
+      });
+      showToast(labelFor(value) + ' 선택됨');
+    });
+  });
+
+  $('submit-crux').addEventListener('click', function () {
+    if (!selected.hold || !selected.move) {
+      return;
+    }
+    renderTip();
+    $('crux-card').classList.add('flipped');
+    recordEvent('crux_submit', { hold: selected.hold, move: selected.move });
+  });
+
+  $('choose-again').addEventListener('click', function () {
+    $('crux-card').classList.remove('flipped');
+    recordEvent('crux_choose_again', { hold: selected.hold, move: selected.move });
+  });
+
+  carousels.feature.body.addEventListener('click', function (event) {
+    var dot = event.target.closest('[data-carousel-dot]');
+    if (!dot) return;
+    goTo('feature', Number(dot.getAttribute('data-carousel-dot')));
+  });
+
+  carousels.survey.body.addEventListener('click', function (event) {
+    var vote = event.target.closest('[data-survey-vote]');
+    if (vote) {
+      var key = vote.getAttribute('data-survey-key');
+      var value = vote.getAttribute('data-survey-vote');
+      carousels.survey.body.querySelectorAll('[data-survey-key="' + key + '"]').forEach(function (peer) {
+        peer.classList.toggle('selected', peer === vote);
+      });
+      recordEvent('feature_vote', { survey: key, vote: value });
+      showToast('응답이 반영됐습니다');
+      resetTimer('survey');
+      return;
+    }
+
+    var choice = event.target.closest('[data-survey-choice]');
+    if (choice) {
+      recordEvent('feature_priority', { choice: choice.textContent });
+      carousels.survey.body.querySelectorAll('[data-survey-choice]').forEach(function (peer) {
+        peer.classList.toggle('selected', peer === choice);
+      });
+      showToast('선택이 반영됐습니다');
+      resetTimer('survey');
+      return;
+    }
+
+    var send = event.target.closest('[data-survey-send]');
+    if (send) {
+      var textarea = carousels.survey.body.querySelector('.idea-box');
+      var text = textarea ? textarea.value.trim() : '';
+      recordEvent('feature_idea', { text: text });
+      showToast(text ? '아이디어가 전달됐습니다' : '아이디어를 적어주세요');
+      if (text) {
+        textarea.value = '';
+        resetTimer('survey');
+      }
+    }
+  });
+
+  carousels.survey.body.addEventListener('focusin', function () {
+    clearTimeout(carousels.survey.timer);
+  });
+
+  carousels.survey.body.addEventListener('focusout', function () {
+    resetTimer('survey');
+  });
+
+  $('result-btn').addEventListener('click', function () {
+    recordEvent('result_cta_tap', { hold: selected.hold, move: selected.move });
+    Bridge.contentEnd();
+  });
+
+  Bridge.contentStart();
+  Bridge.onProcessingDone(updateProcessingDone);
+  updateSelectionUI();
+  updateProcessingDone();
+  startCarousel('feature');
+  startCarousel('survey');
+
+  window.__cruxcutLoadingDebug = {
+    selected: selected,
+    renderTip: renderTip,
+    recordEvent: recordEvent,
+  };
+})();
+</script>
+</body>
+</html>
