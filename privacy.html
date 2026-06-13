@@ -46,11 +46,36 @@
             text-align: center;
             margin-bottom: 60px;
         }
+
+        .lang-switcher {
+            display: inline-flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .lang-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-link[aria-current="page"] {
+            color: var(--text-main);
+            border-color: rgba(37, 99, 235, 0.28);
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             padding: 8px 14px;
             border: 1px solid var(--border);
             border-radius: 999px;
@@ -161,6 +186,10 @@
 <body>
     <div class="terms-container">
         <div class="terms-header">
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a class="lang-link" href="/privacy" aria-current="page">한국어</a>
+                <a class="lang-link" href="/en/privacy">English</a>
+            </div>
             <div class="badge">CruxCut</div>
             <h1>CruxCut 개인정보 처리방침</h1>
             <p class="update-date">최종 업데이트: 2026년 6월 13일</p>

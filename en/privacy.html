@@ -47,6 +47,31 @@
             margin-bottom: 60px;
         }
 
+        .lang-switcher {
+            display: inline-flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .lang-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-link[aria-current="page"] {
+            color: var(--text-main);
+            border-color: rgba(37, 99, 235, 0.28);
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -158,31 +183,35 @@
 <body>
     <div class="terms-container">
         <div class="terms-header">
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a class="lang-link" href="/privacy">한국어</a>
+                <a class="lang-link" href="/en/privacy" aria-current="page">English</a>
+            </div>
             <div class="badge">CruxCut</div>
             <h1>Privacy Policy</h1>
             <p class="update-date">Last updated: June 13, 2026</p>
         </div>
         <div class="terms-content">
-            <p>CruxCut processes and manages personal information lawfully and securely in accordance with the Personal Information Protection Act and related laws and regulations to protect the freedom and rights of data subjects. In accordance with Article 30 of the Personal Information Protection Act, this policy explains the procedures and standards for processing and protecting personal information and provides a way to handle related complaints promptly and smoothly.</p>
+            <p>CruxCut processes and safeguards personal information lawfully and securely in accordance with the Personal Information Protection Act and applicable laws and regulations to protect the rights and freedoms of data subjects. In accordance with Article 30 of the Personal Information Protection Act, this policy explains the procedures and standards for processing and protecting personal information and sets out how related complaints are handled promptly and effectively.</p>
             <h2>1. Purpose of Processing Personal Information</h2>
-            <p>CruxCut processes personal information for the following purposes. Personal information being processed will not be used for any purpose other than the following, and if the purpose changes, necessary measures such as obtaining separate consent will be taken in accordance with Article 18 of the Personal Information Protection Act.</p>
+            <p>CruxCut processes personal information for the following purposes. Personal information being processed will not be used for any purpose other than those described below, and if the purpose changes, necessary measures such as obtaining separate consent will be taken in accordance with Article 18 of the Personal Information Protection Act.</p>
             <h3>1. Membership Registration and Management</h3>
-            <p>We process personal information for confirming membership intent, user identification and authentication, maintaining and managing membership status, preventing misuse of services, sending notices and announcements, and handling complaints.</p>
+            <p>We process personal information to confirm membership intent, perform user identification and authentication, maintain and manage membership status, prevent misuse of services, send notices and announcements, and handle complaints.</p>
             <h3>2. Service Provision</h3>
             <p><strong>AI climbing movement analysis</strong></p>
-            <p>We analyze climbing videos and images uploaded by users to provide movement feedback, route records, and analysis results. Cloud storage and synchronization are provided to users who purchase a subscription plan, and analysis data for general users is processed only on-device and is not collected on the server.</p>
+            <p>We analyze climbing videos and images uploaded by users to provide movement feedback, route records, and analysis results. Cloud storage and synchronization are provided to users who purchase a subscription plan, and analysis data for general users is processed only on-device and is not collected on our servers.</p>
             <h2>2. Personal Information Collected</h2>
             <p>CruxCut collects and uses the following personal information.</p>
             <h3>Personal information processed without consent</h3>
             <h4>1. Simple login</h4>
             <ul>
                 <li><strong>Collected item:</strong> Email</li>
-                <li><strong>Purpose:</strong> Used to identify the user through the email used for simple login.</li>
+                <li><strong>Purpose:</strong> Used to identify users based on the email used for simple login.</li>
             </ul>
             <h4>2. Service provision</h4>
             <ul>
                 <li><strong>Collected item:</strong> climbing videos and images uploaded by the user, movement analysis results, route/session records, label information, service data change logs</li>
-                <li><strong>Purpose:</strong> Providing service features for logged-in users</li>
+                <li><strong>Purpose:</strong> Providing service functions for signed-in users</li>
             </ul>
             <h4>3. Automatically collected information</h4>
             <ul>
@@ -190,20 +219,20 @@
                 <li><strong>Purpose:</strong> Service stability, error diagnosis, and feature improvement</li>
             </ul>
             <h2>3. Retention and Use Period</h2>
-            <p>CruxCut processes and retains personal information within the retention and use period prescribed by law or agreed to by the data subject when collecting the information.</p>
+            <p>CruxCut processes and retains personal information within the retention and use period prescribed by law or agreed to by the data subject at the time the information is collected.</p>
             <ul>
                 <li>All related personal information is destroyed when a user deletes their account.</li>
                 <li>Service data change logs are retained for 90 days from the time of storage and then destroyed.</li>
             </ul>
             <h2>4. Destruction Procedures and Methods</h2>
-            <p>CruxCut destroys personal information without delay when it becomes unnecessary due to the expiration of the retention period or achievement of the processing purpose.</p>
-            <p>If personal information must continue to be retained under other laws even after the agreed retention period has expired or the processing purpose has been achieved, the information is moved to a separate database or stored in a different location.</p>
+            <p>CruxCut destroys personal information without delay when it becomes unnecessary due to the expiration of the retention period or the achievement of the processing purpose.</p>
+            <p>If personal information must continue to be retained under other laws even after the agreed retention period has expired or the processing purpose has been achieved, the information is moved to a separate database or stored in a separate location.</p>
             <h3>Destruction procedure</h3>
             <p>CruxCut selects personal information for destruction when a destruction reason occurs and destroys it after approval from the privacy officer.</p>
             <h3>Destruction method</h3>
             <p>Electronic files containing personal information are destroyed so they cannot be restored.</p>
             <h2>5. Cross-border Collection and Transfer</h2>
-            <p>CruxCut transfers the personal information collected from service users overseas as shown below. In accordance with Article 28-8(2) of the Personal Information Protection Act, the following information is provided regarding cross-border transfer.</p>
+            <p>CruxCut transfers personal information collected from service users overseas as described below. In accordance with Article 28-8(2) of the Personal Information Protection Act, the following information is provided regarding cross-border transfers.</p>
             <p><strong>If you refuse cross-border transfer, service use will not be possible.</strong> If you do not wish to allow cross-border transfer, you may delete your information through the in-app account deletion flow.</p>
             <ul>
                 <li><strong>Legal basis:</strong> Article 26 and Article 28-8(1)(3) of the Personal Information Protection Act (storage)</li>
@@ -214,7 +243,7 @@
                 <li><strong>Retention period:</strong> destroyed immediately upon account deletion</li>
             </ul>
             <h2>6. Security Measures</h2>
-            <p>CruxCut takes the following measures to secure personal information.</p>
+            <p>CruxCut implements the following measures to protect personal information.</p>
             <ul>
                 <li>Access control and privilege management for personal information</li>
                 <li>Encryption of personal information (including encryption in transit)</li>

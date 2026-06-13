@@ -6,6 +6,10 @@ export default {
             return Response.redirect(new URL("/privacy", url), 302);
         }
 
+        if (url.pathname === "/en") {
+            return Response.redirect(new URL("/en/privacy", url), 302);
+        }
+
         if (url.pathname === "/privacy") {
             return env.ASSETS.fetch(new Request(new URL("/privacy.html", url), request));
         }
