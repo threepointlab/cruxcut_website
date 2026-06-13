@@ -18,6 +18,10 @@ export default {
             return env.ASSETS.fetch(new Request(new URL("/en/privacy.html", url), request));
         }
 
+        if (url.pathname === "/loading") {
+            return env.ASSETS.fetch(new Request(new URL("/loading.html", url), request));
+        }
+
         return env.ASSETS.fetch(request);
     },
 };
