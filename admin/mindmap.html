@@ -119,6 +119,37 @@
             background: var(--canvas);
         }
 
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            border: 1px solid var(--ink);
+            border-radius: 4px;
+            background: var(--canvas);
+            color: var(--ink);
+            padding: 12px 16px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.4;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .back-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
         .toolbar-title {
             min-width: 180px;
         }
@@ -646,9 +677,12 @@
 <body>
     <div class="app-shell">
         <header class="toolbar">
-            <div class="toolbar-title">
-                <h1>App Path Mindmap</h1>
-                <p>도메인 중립 트리 편집기</p>
+            <div class="toolbar-left">
+                <a class="back-link" href="/admin">← Admin</a>
+                <div class="toolbar-title">
+                    <h1>App Path Mindmap</h1>
+                    <p>도메인 중립 트리 편집기</p>
+                </div>
             </div>
             <div class="toolbar-actions">
                 <div class="view-switcher" role="tablist" aria-label="View mode">
