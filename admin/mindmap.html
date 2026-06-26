@@ -655,7 +655,7 @@
         const SUPABASE_CONFIG_KEY = "cruxcut.pathMindmap.supabase.v1";
         const REMOTE_DOCUMENT_ID_KEY = "cruxcut.pathMindmap.remoteDocumentId.v1";
         const TABLE_NAME = "mindmap_documents";
-        const AUTOSAVE_DELAY_MS = 1400;
+        const AUTOSAVE_DELAY_MS = 5000;
         const SETUP_SQL = `create table if not exists public.mindmap_documents (
   id uuid primary key default gen_random_uuid(),
   title text not null default 'App Path Map',
