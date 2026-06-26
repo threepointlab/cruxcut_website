@@ -22,8 +22,8 @@ export default {
             return env.ASSETS.fetch(new Request(new URL("/loading.html", url), request));
         }
 
-        if (url.pathname === "/mindmap") {
-            return env.ASSETS.fetch(new Request(new URL("/mindmap.html", url), request));
+        if (url.pathname === "/mindmap" || url.pathname === "/admin/mindmap") {
+            return env.ASSETS.fetch(new Request(new URL("/admin/mindmap.html", url), request));
         }
 
         return env.ASSETS.fetch(request);

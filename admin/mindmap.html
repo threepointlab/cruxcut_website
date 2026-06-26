@@ -641,6 +641,7 @@
         </main>
     </div>
 
+    <script src="../config.js"></script>
     <script>
         const STORAGE_KEY = "cruxcut.pathMindmap.v1";
         const SUPABASE_CONFIG_KEY = "cruxcut.pathMindmap.supabase.v1";
@@ -795,18 +796,24 @@ with check (true);`;
         }
 
         function loadSupabaseConfig() {
+            const configuredUrl = getConfiguredSupabaseUrl();
             try {
                 const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
-                if (!saved) return { url: "", key: "", documentTitle: "App Path Map" };
+                if (!saved) return { url: configuredUrl, key: "", documentTitle: "App Path Map" };
                 const parsed = JSON.parse(saved);
                 return {
-                    url: typeof parsed.url === "string" ? parsed.url : "",
+                    url: typeof parsed.url === "string" && parsed.url ? parsed.url : configuredUrl,
                     key: typeof parsed.key === "string" ? parsed.key : "",
                     documentTitle: typeof parsed.documentTitle === "string" ? parsed.documentTitle : "App Path Map"
                 };
             } catch (error) {
-                return { url: "", key: "", documentTitle: "App Path Map" };
+                return { url: configuredUrl, key: "", documentTitle: "App Path Map" };
             }
+        }
+
+        function getConfiguredSupabaseUrl() {
+            const config = window.CRUXCUT_CONFIG || {};
+            return typeof config.SUPABASE_URL === "string" ? config.SUPABASE_URL.trim() : "";
         }
 
         function saveSupabaseConfig() {
