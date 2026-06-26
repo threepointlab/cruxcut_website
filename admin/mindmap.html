@@ -104,7 +104,8 @@
         .app-shell {
             display: grid;
             grid-template-rows: auto 1fr;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .toolbar {
@@ -194,6 +195,8 @@
             display: grid;
             grid-template-columns: minmax(0, 1fr) 360px;
             min-height: 0;
+            height: 100%;
+            overflow: hidden;
             background: var(--cloud);
         }
 
@@ -306,6 +309,7 @@
 
         .inspector {
             min-width: 0;
+            height: 100%;
             overflow: auto;
             border-left: 1px solid var(--hairline);
             background: var(--canvas);
@@ -517,9 +521,13 @@
 
             .workspace {
                 grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
             }
 
             .inspector {
+                height: auto;
+                max-height: none;
                 border-top: 1px solid var(--hairline);
                 border-left: 0;
             }
