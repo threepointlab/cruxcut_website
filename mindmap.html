@@ -141,8 +141,53 @@
         .toolbar-actions {
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
             justify-content: flex-end;
             gap: 8px;
+        }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 36px;
+            border: 1px solid var(--hairline);
+            border-radius: 9999px;
+            background: var(--cloud);
+            color: var(--graphite);
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: var(--steel);
+        }
+
+        .sync-indicator[data-status="dirty"] .sync-dot {
+            background: var(--primary);
+        }
+
+        .sync-indicator[data-status="syncing"] .sync-dot {
+            background: var(--primary-bright);
+        }
+
+        .sync-indicator[data-status="synced"] .sync-dot {
+            background: var(--ink);
+        }
+
+        .sync-indicator[data-status="error"] {
+            border-color: var(--error-soft);
+            background: #fff7f7;
+            color: var(--error);
+        }
+
+        .sync-indicator[data-status="error"] .sync-dot {
+            background: var(--error);
         }
 
         .workspace {
@@ -493,6 +538,10 @@
                 <p>도메인 중립 트리 편집기</p>
             </div>
             <div class="toolbar-actions">
+                <div id="syncIndicator" class="sync-indicator" data-status="local" aria-live="polite">
+                    <span class="sync-dot" aria-hidden="true"></span>
+                    <span id="syncLabel">Local only</span>
+                </div>
                 <button id="resetButton" type="button">Reset</button>
                 <button id="copyButton" type="button">Copy YAML</button>
                 <button id="downloadButton" class="primary" type="button">Download YAML</button>
@@ -597,6 +646,7 @@
         const SUPABASE_CONFIG_KEY = "cruxcut.pathMindmap.supabase.v1";
         const REMOTE_DOCUMENT_ID_KEY = "cruxcut.pathMindmap.remoteDocumentId.v1";
         const TABLE_NAME = "mindmap_documents";
+        const AUTOSAVE_DELAY_MS = 1400;
         const SETUP_SQL = `create table if not exists public.mindmap_documents (
   id uuid primary key default gen_random_uuid(),
   title text not null default 'App Path Map',
@@ -640,11 +690,18 @@ with check (true);`;
             supabaseClient: null,
             remoteDocumentId: localStorage.getItem(REMOTE_DOCUMENT_ID_KEY) || "",
             remoteDocuments: [],
-            activeInspectorTab: "node"
+            activeInspectorTab: "node",
+            syncStatus: "local",
+            syncMessage: "Local only",
+            autosaveTimerId: 0,
+            autosaveInFlight: false,
+            autosaveQueued: false
         };
 
         const elements = {
             tree: document.getElementById("tree"),
+            syncIndicator: document.getElementById("syncIndicator"),
+            syncLabel: document.getElementById("syncLabel"),
             nodeTabButton: document.getElementById("nodeTabButton"),
             databaseTabButton: document.getElementById("databaseTabButton"),
             nodePanel: document.getElementById("nodePanel"),
@@ -704,7 +761,7 @@ with check (true);`;
             elements.nodeTabButton.addEventListener("click", () => setInspectorTab("node"));
             elements.databaseTabButton.addEventListener("click", () => setInspectorTab("database"));
             elements.connectButton.addEventListener("click", connectSupabase);
-            elements.saveCloudButton.addEventListener("click", saveCloudDocument);
+            elements.saveCloudButton.addEventListener("click", () => saveCloudDocument());
             elements.loadCloudButton.addEventListener("click", loadCloudDocument);
             elements.newCloudButton.addEventListener("click", createCloudCopy);
             elements.remoteDocumentSelect.addEventListener("change", () => {
@@ -713,15 +770,18 @@ with check (true);`;
             });
             elements.documentTitleInput.addEventListener("input", () => {
                 saveSupabaseConfig();
+                scheduleCloudAutosave();
             });
             elements.supabaseUrlInput.addEventListener("change", () => {
                 saveSupabaseConfig();
                 state.supabaseClient = null;
+                updateSyncStatus(hasSupabaseConfig() ? "dirty" : "local", hasSupabaseConfig() ? "Ready to sync" : "Local only");
                 renderCloudControls();
             });
             elements.supabaseKeyInput.addEventListener("change", () => {
                 saveSupabaseConfig();
                 state.supabaseClient = null;
+                updateSyncStatus(hasSupabaseConfig() ? "dirty" : "local", hasSupabaseConfig() ? "Ready to sync" : "Local only");
                 renderCloudControls();
             });
         }
@@ -783,6 +843,7 @@ with check (true);`;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tree));
             render();
             setStatus(message);
+            scheduleCloudAutosave();
         }
 
         function render() {
@@ -794,6 +855,7 @@ with check (true);`;
             renderInspector();
             renderInspectorTabs();
             renderCloudControls();
+            renderSyncStatus();
             renderYaml();
         }
 
@@ -935,13 +997,76 @@ with check (true);`;
         }
 
         function renderCloudControls() {
-            const hasConfig = Boolean(elements.supabaseUrlInput.value.trim() && elements.supabaseKeyInput.value.trim());
+            const hasConfig = hasSupabaseConfig();
             const isConnected = Boolean(state.supabaseClient);
             elements.connectButton.textContent = isConnected ? "Refresh" : "Connect";
             elements.saveCloudButton.disabled = !hasConfig;
             elements.loadCloudButton.disabled = !isConnected || !state.remoteDocumentId;
             elements.newCloudButton.disabled = !isConnected;
             renderRemoteDocumentOptions();
+        }
+
+        function hasSupabaseConfig() {
+            return Boolean(elements.supabaseUrlInput.value.trim() && elements.supabaseKeyInput.value.trim());
+        }
+
+        function renderSyncStatus() {
+            const status = hasSupabaseConfig() ? state.syncStatus : "local";
+            const label = hasSupabaseConfig() ? state.syncMessage : "Local only";
+            elements.syncIndicator.dataset.status = status;
+            elements.syncLabel.textContent = label;
+        }
+
+        function updateSyncStatus(status, message) {
+            state.syncStatus = status;
+            state.syncMessage = message;
+            renderSyncStatus();
+        }
+
+        function scheduleCloudAutosave() {
+            window.clearTimeout(state.autosaveTimerId);
+
+            if (!hasSupabaseConfig()) {
+                updateSyncStatus("local", "Local only");
+                return;
+            }
+
+            updateSyncStatus("dirty", "Unsaved");
+            state.autosaveTimerId = window.setTimeout(() => {
+                autosaveCloudDocument();
+            }, AUTOSAVE_DELAY_MS);
+        }
+
+        async function autosaveCloudDocument() {
+            if (!hasSupabaseConfig()) {
+                updateSyncStatus("local", "Local only");
+                return;
+            }
+
+            if (state.autosaveInFlight) {
+                state.autosaveQueued = true;
+                return;
+            }
+
+            state.autosaveInFlight = true;
+            updateSyncStatus("syncing", "Syncing...");
+
+            const saved = await saveCloudDocument({
+                autosave: true,
+                skipRefresh: true
+            });
+
+            state.autosaveInFlight = false;
+
+            if (state.autosaveQueued) {
+                state.autosaveQueued = false;
+                scheduleCloudAutosave();
+                return;
+            }
+
+            if (saved) {
+                updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+            }
         }
 
         function renderRemoteDocumentOptions() {
@@ -974,7 +1099,10 @@ with check (true);`;
             saveSupabaseConfig();
             const client = getSupabaseClient();
             if (!client) return;
-            await refreshCloudDocuments("Connected");
+            const refreshed = await refreshCloudDocuments("Connected");
+            if (refreshed) {
+                updateSyncStatus("dirty", state.remoteDocumentId ? "Ready to sync" : "No cloud document");
+            }
         }
 
         function getSupabaseClient() {
@@ -1051,7 +1179,7 @@ with check (true);`;
 
             if (result.error) {
                 handleSupabaseError(result.error, "Could not load cloud documents");
-                return;
+                return false;
             }
 
             state.remoteDocuments = Array.isArray(result.data) ? result.data : [];
@@ -1061,11 +1189,21 @@ with check (true);`;
             }
             renderCloudControls();
             setStatus(successMessage || "Cloud documents loaded");
+            return true;
         }
 
-        async function saveCloudDocument() {
+        async function saveCloudDocument(options = {}) {
+            const { autosave = false, skipRefresh = false } = options;
+            if (!autosave) {
+                window.clearTimeout(state.autosaveTimerId);
+                updateSyncStatus("syncing", "Syncing...");
+            }
+
             const client = getSupabaseClient();
-            if (!client) return;
+            if (!client) {
+                if (!autosave) updateSyncStatus("local", "Local only");
+                return false;
+            }
 
             saveSupabaseConfig();
             renderYaml();
@@ -1078,7 +1216,7 @@ with check (true);`;
                 updated_at: new Date().toISOString()
             };
 
-            setStatus("Saving to Supabase...");
+            if (!autosave) setStatus("Saving to Supabase...");
 
             if (state.remoteDocumentId) {
                 const result = await supabaseRequest({
@@ -1093,44 +1231,65 @@ with check (true);`;
 
                 if (result.error) {
                     handleSupabaseError(result.error, "Could not update cloud document");
-                    return;
+                    return false;
                 }
 
                 const updated = Array.isArray(result.data) ? result.data[0] : null;
                 if (!updated) {
                     setStatus("Could not update cloud document: no matching row");
-                    return;
+                    updateSyncStatus("error", "Sync failed");
+                    return false;
                 }
                 upsertRemoteDocumentSummary(updated);
-                setStatus("Cloud document saved");
+                if (!autosave) setStatus("Cloud document saved");
             } else {
-                await insertCloudDocument(payload, "Cloud document created");
+                const inserted = await insertCloudDocument(payload, "Cloud document created", { autosave });
+                if (!inserted) return false;
             }
 
-            await refreshCloudDocuments("Cloud document saved");
+            if (!skipRefresh) {
+                const refreshed = await refreshCloudDocuments("Cloud document saved");
+                if (!refreshed) return false;
+            } else {
+                renderCloudControls();
+            }
+
+            if (!autosave) {
+                updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+            }
+
+            return true;
         }
 
         async function createCloudCopy() {
             const client = getSupabaseClient();
             if (!client) return;
 
+            window.clearTimeout(state.autosaveTimerId);
+            updateSyncStatus("syncing", "Syncing...");
             saveSupabaseConfig();
             renderYaml();
             const title = elements.documentTitleInput.value.trim() || "App Path Map";
-            await insertCloudDocument({
+            const inserted = await insertCloudDocument({
                 title,
                 tree: state.tree,
                 yaml: elements.yamlOutput.value,
                 updated_at: new Date().toISOString()
             }, "New cloud copy created");
-            await refreshCloudDocuments("New cloud copy created");
+            if (inserted) {
+                const refreshed = await refreshCloudDocuments("New cloud copy created");
+                if (refreshed) {
+                    updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+                }
+            }
         }
 
-        async function insertCloudDocument(payload, successMessage) {
+        async function insertCloudDocument(payload, successMessage, options = {}) {
+            const { autosave = false } = options;
             const client = getSupabaseClient();
-            if (!client) return;
+            if (!client) return false;
 
-            setStatus("Creating cloud document...");
+            if (!autosave) setStatus("Creating cloud document...");
             const result = await supabaseRequest({
                 method: "POST",
                 query: {
@@ -1142,20 +1301,22 @@ with check (true);`;
 
             if (result.error) {
                 handleSupabaseError(result.error, "Could not create cloud document");
-                return;
+                return false;
             }
 
             const data = Array.isArray(result.data) ? result.data[0] : null;
             if (!data) {
                 setStatus("Could not create cloud document: empty response");
-                return;
+                updateSyncStatus("error", "Sync failed");
+                return false;
             }
 
             state.remoteDocumentId = data.id;
             localStorage.setItem(REMOTE_DOCUMENT_ID_KEY, state.remoteDocumentId);
             upsertRemoteDocumentSummary(data);
             renderCloudControls();
-            setStatus(successMessage);
+            if (!autosave) setStatus(successMessage);
+            return true;
         }
 
         async function loadCloudDocument() {
@@ -1193,6 +1354,7 @@ with check (true);`;
             upsertRemoteDocumentSummary(data);
             render();
             setStatus("Cloud document loaded");
+            updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
         }
 
         function upsertRemoteDocumentSummary(remoteDoc) {
@@ -1267,6 +1429,7 @@ with check (true);`;
             console.error(error);
             const detail = error && error.message ? error.message : "Unknown error";
             setStatus(`${fallbackMessage}: ${detail}`);
+            updateSyncStatus("error", "Sync failed");
         }
 
         function formatDate(value) {
@@ -1277,6 +1440,13 @@ with check (true);`;
                 year: "2-digit",
                 month: "2-digit",
                 day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function formatTime(value) {
+            return value.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"
             });
