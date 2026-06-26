@@ -796,6 +796,7 @@ with check (true);`;
             });
             document.addEventListener("keydown", handleNodeClipboardShortcut);
             document.addEventListener("copy", handleNodeCopyEvent);
+            document.addEventListener("cut", handleNodeCutEvent);
             document.addEventListener("paste", handleNodePasteEvent);
         }
 
@@ -1033,6 +1034,12 @@ with check (true);`;
                 return;
             }
 
+            if (event.key.toLowerCase() === "x") {
+                event.preventDefault();
+                await cutSelectedNodeToClipboard();
+                return;
+            }
+
             if (event.key.toLowerCase() === "v") {
                 event.preventDefault();
                 await pasteClipboardNodeAsChild();
@@ -1041,7 +1048,7 @@ with check (true);`;
 
         function isClipboardShortcut(event) {
             const key = event.key.toLowerCase();
-            return (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && (key === "c" || key === "v");
+            return (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && (key === "c" || key === "x" || key === "v");
         }
 
         function isEditableTarget(target) {
@@ -1060,6 +1067,23 @@ with check (true);`;
                 setStatus("Selected node copied");
             } catch (error) {
                 setStatus("Could not copy selected node");
+            }
+        }
+
+        async function cutSelectedNodeToClipboard() {
+            if (state.selectedId === "root") {
+                setStatus("Root node cannot be cut");
+                return;
+            }
+
+            const node = findNode(state.tree, state.selectedId);
+            if (!node) return;
+
+            try {
+                await navigator.clipboard.writeText(serializeNodeForClipboard(node));
+                removeSelectedNode("Node cut");
+            } catch (error) {
+                setStatus("Could not cut selected node");
             }
         }
 
@@ -1102,6 +1126,20 @@ with check (true);`;
             event.preventDefault();
             event.clipboardData.setData("text/plain", serializeNodeForClipboard(node));
             setStatus("Selected node copied");
+        }
+
+        function handleNodeCutEvent(event) {
+            if (isEditableTarget(event.target)) return;
+            if (state.selectedId === "root") {
+                setStatus("Root node cannot be cut");
+                return;
+            }
+
+            const node = findNode(state.tree, state.selectedId);
+            if (!node || !event.clipboardData) return;
+            event.preventDefault();
+            event.clipboardData.setData("text/plain", serializeNodeForClipboard(node));
+            removeSelectedNode("Node cut");
         }
 
         function handleNodePasteEvent(event) {
@@ -1648,11 +1686,15 @@ with check (true);`;
 
         function deleteSelected() {
             if (state.selectedId === "root") return;
+            removeSelectedNode("Node deleted");
+        }
+
+        function removeSelectedNode(message) {
             const parentInfo = findParent(state.tree, state.selectedId);
             if (!parentInfo) return;
             parentInfo.parent.children.splice(parentInfo.index, 1);
             state.selectedId = parentInfo.parent.id;
-            saveAndRender("Node deleted");
+            saveAndRender(message);
         }
 
         function resetTree() {
