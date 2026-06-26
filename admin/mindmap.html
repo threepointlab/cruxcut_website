@@ -119,6 +119,37 @@
             background: var(--canvas);
         }
 
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            min-height: 36px;
+            border: 1px solid var(--ink);
+            border-radius: 4px;
+            background: var(--canvas);
+            color: var(--ink);
+            padding: 0;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .back-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
         .toolbar-title {
             min-width: 180px;
         }
@@ -646,9 +677,12 @@
 <body>
     <div class="app-shell">
         <header class="toolbar">
-            <div class="toolbar-title">
-                <h1>App Path Mindmap</h1>
-                <p>도메인 중립 트리 편집기</p>
+            <div class="toolbar-left">
+                <a class="back-link" href="/admin" aria-label="Back to admin">‹</a>
+                <div class="toolbar-title">
+                    <h1>App Path Mindmap</h1>
+                    <p>도메인 중립 트리 편집기</p>
+                </div>
             </div>
             <div class="toolbar-actions">
                 <div class="view-switcher" role="tablist" aria-label="View mode">
@@ -726,6 +760,7 @@
                         <div class="field">
                             <label for="supabaseUrlInput">Supabase URL</label>
                             <input id="supabaseUrlInput" type="url" autocomplete="off" placeholder="https://project.supabase.co">
+                            <p id="supabaseUrlHelp" class="helper-text"></p>
                         </div>
 
                         <div class="field">
@@ -931,6 +966,10 @@ with check (true);`;
         function initializeSupabaseFields() {
             const config = loadSupabaseConfig();
             elements.supabaseUrlInput.value = config.url;
+            elements.supabaseUrlInput.readOnly = config.hasConfiguredUrl;
+            document.getElementById("supabaseUrlHelp").textContent = config.hasConfiguredUrl
+                ? "Loaded from config.js"
+                : "Set SUPABASE_URL in config.js or enter it here.";
             elements.supabaseKeyInput.value = config.key;
             elements.documentTitleInput.value = config.documentTitle || "App Path Map";
             elements.schemaSqlOutput.value = SETUP_SQL;
@@ -938,17 +977,19 @@ with check (true);`;
 
         function loadSupabaseConfig() {
             const configuredUrl = getConfiguredSupabaseUrl();
+            const hasConfiguredUrl = Boolean(configuredUrl);
             try {
                 const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
-                if (!saved) return { url: configuredUrl, key: "", documentTitle: "App Path Map" };
+                if (!saved) return { url: configuredUrl, key: "", documentTitle: "App Path Map", hasConfiguredUrl };
                 const parsed = JSON.parse(saved);
                 return {
-                    url: typeof parsed.url === "string" && parsed.url ? parsed.url : configuredUrl,
+                    url: configuredUrl || (typeof parsed.url === "string" ? parsed.url : ""),
                     key: typeof parsed.key === "string" ? parsed.key : "",
-                    documentTitle: typeof parsed.documentTitle === "string" ? parsed.documentTitle : "App Path Map"
+                    documentTitle: typeof parsed.documentTitle === "string" ? parsed.documentTitle : "App Path Map",
+                    hasConfiguredUrl
                 };
             } catch (error) {
-                return { url: configuredUrl, key: "", documentTitle: "App Path Map" };
+                return { url: configuredUrl, key: "", documentTitle: "App Path Map", hasConfiguredUrl };
             }
         }
 
