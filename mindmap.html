@@ -272,6 +272,46 @@
             gap: 20px;
         }
 
+        .inspector-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            margin: -24px -24px 0;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--hairline);
+            background: var(--canvas);
+        }
+
+        .tab-button {
+            border-color: var(--steel);
+            background: var(--canvas);
+            color: var(--ink);
+        }
+
+        .tab-button.is-active {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .tab-button.is-active:hover:not(:disabled) {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .tab-panel {
+            display: grid;
+            gap: 20px;
+        }
+
+        .tab-panel[hidden] {
+            display: none;
+        }
+
         .panel h2 {
             margin: 0;
             color: var(--ink);
@@ -466,35 +506,42 @@
 
             <aside class="inspector" aria-label="Selected node editor">
                 <div class="panel">
-                    <h2>Selected Node</h2>
-
-                    <div class="field">
-                        <label for="titleInput">Title</label>
-                        <input id="titleInput" type="text" autocomplete="off">
+                    <div class="inspector-tabs" role="tablist" aria-label="Inspector sections">
+                        <button id="nodeTabButton" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="nodePanel">Node</button>
+                        <button id="databaseTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="databasePanel">Database</button>
                     </div>
 
-                    <div class="field">
-                        <label for="noteInput">Note</label>
-                        <textarea id="noteInput"></textarea>
-                    </div>
+                    <section id="nodePanel" class="tab-panel" role="tabpanel" aria-labelledby="nodeTabButton">
+                        <h2>Selected Node</h2>
 
-                    <div class="button-grid">
-                        <button id="addChildButton" type="button">Add Child</button>
-                        <button id="addSiblingButton" type="button">Add Sibling</button>
-                        <button id="moveUpButton" type="button">Move Up</button>
-                        <button id="moveDownButton" type="button">Move Down</button>
-                    </div>
+                        <div class="field">
+                            <label for="titleInput">Title</label>
+                            <input id="titleInput" type="text" autocomplete="off">
+                        </div>
 
-                    <div class="field">
-                        <label for="parentSelect">Parent</label>
-                        <select id="parentSelect"></select>
-                    </div>
+                        <div class="field">
+                            <label for="noteInput">Note</label>
+                            <textarea id="noteInput"></textarea>
+                        </div>
 
-                    <button id="deleteButton" class="danger" type="button">Delete Node</button>
+                        <div class="button-grid">
+                            <button id="addChildButton" type="button">Add Child</button>
+                            <button id="addSiblingButton" type="button">Add Sibling</button>
+                            <button id="moveUpButton" type="button">Move Up</button>
+                            <button id="moveDownButton" type="button">Move Down</button>
+                        </div>
 
-                    <div class="panel-section" aria-label="Supabase cloud sync">
+                        <div class="field">
+                            <label for="parentSelect">Parent</label>
+                            <select id="parentSelect"></select>
+                        </div>
+
+                        <button id="deleteButton" class="danger" type="button">Delete Node</button>
+                    </section>
+
+                    <section id="databasePanel" class="tab-panel" role="tabpanel" aria-labelledby="databaseTabButton" hidden>
                         <div class="section-heading">
-                            <h3>Cloud Sync</h3>
+                            <h2>Database</h2>
                             <p>Supabase URL과 anon key를 이 브라우저에 저장해 트리를 공유 DB와 동기화합니다.</p>
                         </div>
 
@@ -532,7 +579,7 @@
                             <summary>Supabase setup SQL</summary>
                             <textarea id="schemaSqlOutput" class="schema-box" readonly></textarea>
                         </details>
-                    </div>
+                    </section>
 
                     <div class="field">
                         <label for="yamlOutput">YAML Export</label>
@@ -592,11 +639,16 @@ with check (true);`;
             collapsedIds: new Set(),
             supabaseClient: null,
             remoteDocumentId: localStorage.getItem(REMOTE_DOCUMENT_ID_KEY) || "",
-            remoteDocuments: []
+            remoteDocuments: [],
+            activeInspectorTab: "node"
         };
 
         const elements = {
             tree: document.getElementById("tree"),
+            nodeTabButton: document.getElementById("nodeTabButton"),
+            databaseTabButton: document.getElementById("databaseTabButton"),
+            nodePanel: document.getElementById("nodePanel"),
+            databasePanel: document.getElementById("databasePanel"),
             titleInput: document.getElementById("titleInput"),
             noteInput: document.getElementById("noteInput"),
             addChildButton: document.getElementById("addChildButton"),
@@ -649,6 +701,8 @@ with check (true);`;
             elements.resetButton.addEventListener("click", resetTree);
             elements.copyButton.addEventListener("click", copyYaml);
             elements.downloadButton.addEventListener("click", downloadYaml);
+            elements.nodeTabButton.addEventListener("click", () => setInspectorTab("node"));
+            elements.databaseTabButton.addEventListener("click", () => setInspectorTab("database"));
             elements.connectButton.addEventListener("click", connectSupabase);
             elements.saveCloudButton.addEventListener("click", saveCloudDocument);
             elements.loadCloudButton.addEventListener("click", loadCloudDocument);
@@ -738,8 +792,24 @@ with check (true);`;
 
             elements.tree.replaceChildren(renderNode(state.tree));
             renderInspector();
+            renderInspectorTabs();
             renderCloudControls();
             renderYaml();
+        }
+
+        function setInspectorTab(tabName) {
+            state.activeInspectorTab = tabName;
+            renderInspectorTabs();
+        }
+
+        function renderInspectorTabs() {
+            const isNodeTab = state.activeInspectorTab === "node";
+            elements.nodeTabButton.classList.toggle("is-active", isNodeTab);
+            elements.databaseTabButton.classList.toggle("is-active", !isNodeTab);
+            elements.nodeTabButton.setAttribute("aria-selected", String(isNodeTab));
+            elements.databaseTabButton.setAttribute("aria-selected", String(!isNodeTab));
+            elements.nodePanel.hidden = !isNodeTab;
+            elements.databasePanel.hidden = isNodeTab;
         }
 
         function renderNode(node) {
