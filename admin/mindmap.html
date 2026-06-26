@@ -104,7 +104,8 @@
         .app-shell {
             display: grid;
             grid-template-rows: auto 1fr;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .toolbar {
@@ -144,6 +145,34 @@
             align-items: center;
             justify-content: flex-end;
             gap: 8px;
+        }
+
+        .view-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            border: 1px solid var(--steel);
+            border-radius: 4px;
+            background: var(--canvas);
+            padding: 3px;
+        }
+
+        .view-button {
+            min-height: 34px;
+            border: 0;
+            background: transparent;
+            color: var(--ink);
+            padding: 6px 12px;
+        }
+
+        .view-button.is-active {
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .view-button.is-active:hover:not(:disabled) {
+            background: var(--ink);
+            color: var(--on-primary);
         }
 
         .sync-indicator {
@@ -194,6 +223,8 @@
             display: grid;
             grid-template-columns: minmax(0, 1fr) 360px;
             min-height: 0;
+            height: 100%;
+            overflow: hidden;
             background: var(--cloud);
         }
 
@@ -207,6 +238,83 @@
             display: inline-block;
             min-width: 100%;
             padding: 8px 0 40px;
+        }
+
+        .view-panel[hidden] {
+            display: none;
+        }
+
+        .table-view {
+            min-width: 760px;
+            border: 1px solid var(--hairline);
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--canvas);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .node-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .node-table th,
+        .node-table td {
+            border-bottom: 1px solid var(--hairline);
+            padding: 12px 16px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .node-table th {
+            background: var(--cloud);
+            color: var(--graphite);
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .node-table td {
+            color: var(--ink);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .node-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .node-table tbody tr {
+            cursor: pointer;
+        }
+
+        .node-table tbody tr:hover td {
+            background: var(--cloud);
+        }
+
+        .node-table tbody tr.is-selected td {
+            background: var(--primary-soft);
+        }
+
+        .node-table .path-cell {
+            width: 48%;
+            color: var(--charcoal);
+        }
+
+        .node-table .name-cell {
+            width: 22%;
+            font-weight: 700;
+        }
+
+        .node-table .note-cell {
+            width: 30%;
+            color: var(--graphite);
+        }
+
+        .node-table .table-empty {
+            color: var(--graphite);
+            text-align: center;
         }
 
         .node-row {
@@ -306,6 +414,7 @@
 
         .inspector {
             min-width: 0;
+            height: 100%;
             overflow: auto;
             border-left: 1px solid var(--hairline);
             background: var(--canvas);
@@ -517,9 +626,13 @@
 
             .workspace {
                 grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
             }
 
             .inspector {
+                height: auto;
+                max-height: none;
                 border-top: 1px solid var(--hairline);
                 border-left: 0;
             }
@@ -538,6 +651,10 @@
                 <p>도메인 중립 트리 편집기</p>
             </div>
             <div class="toolbar-actions">
+                <div class="view-switcher" role="tablist" aria-label="View mode">
+                    <button id="mindmapViewButton" class="view-button is-active" type="button" role="tab" aria-selected="true">Mindmap</button>
+                    <button id="tableViewButton" class="view-button" type="button" role="tab" aria-selected="false">Table</button>
+                </div>
                 <div id="syncIndicator" class="sync-indicator" data-status="local" aria-live="polite">
                     <span class="sync-dot" aria-hidden="true"></span>
                     <span id="syncLabel">Local only</span>
@@ -550,7 +667,19 @@
 
         <main class="workspace">
             <section class="canvas" aria-label="Mindmap canvas">
-                <div id="tree" class="tree"></div>
+                <div id="tree" class="tree view-panel"></div>
+                <div id="tableView" class="table-view view-panel" hidden>
+                    <table class="node-table">
+                        <thead>
+                            <tr>
+                                <th class="path-cell">Path</th>
+                                <th class="name-cell">Node</th>
+                                <th class="note-cell">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
             </section>
 
             <aside class="inspector" aria-label="Selected node editor">
@@ -647,7 +776,8 @@
         const SUPABASE_CONFIG_KEY = "cruxcut.pathMindmap.supabase.v1";
         const REMOTE_DOCUMENT_ID_KEY = "cruxcut.pathMindmap.remoteDocumentId.v1";
         const TABLE_NAME = "mindmap_documents";
-        const AUTOSAVE_DELAY_MS = 1400;
+        const AUTOSAVE_DELAY_MS = 5000;
+        const CLIPBOARD_NODE_TYPE = "cruxcut.mindmap.node";
         const SETUP_SQL = `create table if not exists public.mindmap_documents (
   id uuid primary key default gen_random_uuid(),
   title text not null default 'App Path Map',
@@ -696,11 +826,16 @@ with check (true);`;
             syncMessage: "Local only",
             autosaveTimerId: 0,
             autosaveInFlight: false,
-            autosaveQueued: false
+            autosaveQueued: false,
+            viewMode: "mindmap"
         };
 
         const elements = {
             tree: document.getElementById("tree"),
+            tableView: document.getElementById("tableView"),
+            tableBody: document.getElementById("tableBody"),
+            mindmapViewButton: document.getElementById("mindmapViewButton"),
+            tableViewButton: document.getElementById("tableViewButton"),
             syncIndicator: document.getElementById("syncIndicator"),
             syncLabel: document.getElementById("syncLabel"),
             nodeTabButton: document.getElementById("nodeTabButton"),
@@ -759,6 +894,8 @@ with check (true);`;
             elements.resetButton.addEventListener("click", resetTree);
             elements.copyButton.addEventListener("click", copyYaml);
             elements.downloadButton.addEventListener("click", downloadYaml);
+            elements.mindmapViewButton.addEventListener("click", () => setViewMode("mindmap"));
+            elements.tableViewButton.addEventListener("click", () => setViewMode("table"));
             elements.nodeTabButton.addEventListener("click", () => setInspectorTab("node"));
             elements.databaseTabButton.addEventListener("click", () => setInspectorTab("database"));
             elements.connectButton.addEventListener("click", connectSupabase);
@@ -785,6 +922,10 @@ with check (true);`;
                 updateSyncStatus(hasSupabaseConfig() ? "dirty" : "local", hasSupabaseConfig() ? "Ready to sync" : "Local only");
                 renderCloudControls();
             });
+            document.addEventListener("keydown", handleNodeClipboardShortcut);
+            document.addEventListener("copy", handleNodeCopyEvent);
+            document.addEventListener("cut", handleNodeCutEvent);
+            document.addEventListener("paste", handleNodePasteEvent);
         }
 
         function initializeSupabaseFields() {
@@ -846,6 +987,15 @@ with check (true);`;
             };
         }
 
+        function normalizePastedNode(node) {
+            return {
+                id: createId(),
+                title: typeof node.title === "string" && node.title.trim() ? node.title : "Untitled",
+                note: typeof node.note === "string" ? node.note : "",
+                children: Array.isArray(node.children) ? node.children.map(normalizePastedNode) : []
+            };
+        }
+
         function saveAndRender(message) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tree));
             render();
@@ -859,11 +1009,28 @@ with check (true);`;
             }
 
             elements.tree.replaceChildren(renderNode(state.tree));
+            renderTable();
+            renderViewMode();
             renderInspector();
             renderInspectorTabs();
             renderCloudControls();
             renderSyncStatus();
             renderYaml();
+        }
+
+        function setViewMode(viewMode) {
+            state.viewMode = viewMode;
+            renderViewMode();
+        }
+
+        function renderViewMode() {
+            const isMindmap = state.viewMode === "mindmap";
+            elements.tree.hidden = !isMindmap;
+            elements.tableView.hidden = isMindmap;
+            elements.mindmapViewButton.classList.toggle("is-active", isMindmap);
+            elements.tableViewButton.classList.toggle("is-active", !isMindmap);
+            elements.mindmapViewButton.setAttribute("aria-selected", String(isMindmap));
+            elements.tableViewButton.setAttribute("aria-selected", String(!isMindmap));
         }
 
         function setInspectorTab(tabName) {
@@ -1001,6 +1168,219 @@ with check (true);`;
                 title: "App Path Map",
                 root: state.tree
             });
+        }
+
+        function renderTable() {
+            const rows = flattenTreeRows(state.tree);
+            elements.tableBody.replaceChildren();
+
+            if (rows.length === 0) {
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+                cell.className = "table-empty";
+                cell.colSpan = 3;
+                cell.textContent = "No nodes";
+                row.append(cell);
+                elements.tableBody.append(row);
+                return;
+            }
+
+            rows.forEach((item) => {
+                const row = document.createElement("tr");
+                row.dataset.nodeId = item.id;
+                if (item.id === state.selectedId) {
+                    row.className = "is-selected";
+                }
+                row.addEventListener("click", () => {
+                    state.selectedId = item.id;
+                    render();
+                });
+
+                const pathCell = document.createElement("td");
+                pathCell.className = "path-cell";
+                pathCell.textContent = item.path;
+
+                const nameCell = document.createElement("td");
+                nameCell.className = "name-cell";
+                nameCell.textContent = item.title;
+
+                const noteCell = document.createElement("td");
+                noteCell.className = "note-cell";
+                noteCell.textContent = item.note;
+
+                row.append(pathCell, nameCell, noteCell);
+                elements.tableBody.append(row);
+            });
+        }
+
+        function flattenTreeRows(node, ancestors = []) {
+            const title = displayTitle(node);
+            const pathParts = [...ancestors, title];
+            const rows = [{
+                id: node.id,
+                path: pathParts.join(" / "),
+                title,
+                note: node.note || ""
+            }];
+
+            node.children.forEach((child) => {
+                rows.push(...flattenTreeRows(child, pathParts));
+            });
+
+            return rows;
+        }
+
+        async function handleNodeClipboardShortcut(event) {
+            if (!isClipboardShortcut(event) || isEditableTarget(event.target)) return;
+
+            if (event.key.toLowerCase() === "c") {
+                event.preventDefault();
+                await copySelectedNodeToClipboard();
+                return;
+            }
+
+            if (event.key.toLowerCase() === "x") {
+                event.preventDefault();
+                await cutSelectedNodeToClipboard();
+                return;
+            }
+
+            if (event.key.toLowerCase() === "v") {
+                event.preventDefault();
+                await pasteClipboardNodeAsChild();
+            }
+        }
+
+        function isClipboardShortcut(event) {
+            const key = event.key.toLowerCase();
+            return (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && (key === "c" || key === "x" || key === "v");
+        }
+
+        function isEditableTarget(target) {
+            if (!(target instanceof Element)) return false;
+            return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+        }
+
+        async function copySelectedNodeToClipboard() {
+            const node = findNode(state.tree, state.selectedId);
+            if (!node) return;
+
+            const text = serializeNodeForClipboard(node);
+
+            try {
+                await navigator.clipboard.writeText(text);
+                setStatus("Selected node copied");
+            } catch (error) {
+                setStatus("Could not copy selected node");
+            }
+        }
+
+        async function cutSelectedNodeToClipboard() {
+            if (state.selectedId === "root") {
+                setStatus("Root node cannot be cut");
+                return;
+            }
+
+            const node = findNode(state.tree, state.selectedId);
+            if (!node) return;
+
+            try {
+                await navigator.clipboard.writeText(serializeNodeForClipboard(node));
+                removeSelectedNode("Node cut");
+            } catch (error) {
+                setStatus("Could not cut selected node");
+            }
+        }
+
+        async function pasteClipboardNodeAsChild() {
+            const parent = findNode(state.tree, state.selectedId);
+            if (!parent) return;
+
+            let text = "";
+            try {
+                text = await navigator.clipboard.readText();
+            } catch (error) {
+                setStatus("Could not read clipboard");
+                return;
+            }
+
+            const clipboardNode = parseClipboardNode(text);
+            pasteClipboardNode(clipboardNode);
+        }
+
+        function pasteClipboardNode(clipboardNode) {
+            if (!clipboardNode) {
+                setStatus("Clipboard does not contain a mindmap node");
+                return false;
+            }
+
+            const parent = findNode(state.tree, state.selectedId);
+            if (!parent) return false;
+            const pastedNode = normalizePastedNode(clipboardNode);
+            parent.children.push(pastedNode);
+            state.selectedId = pastedNode.id;
+            state.collapsedIds.delete(parent.id);
+            saveAndRender("Node pasted");
+            return true;
+        }
+
+        function handleNodeCopyEvent(event) {
+            if (isEditableTarget(event.target)) return;
+            const node = findNode(state.tree, state.selectedId);
+            if (!node || !event.clipboardData) return;
+            event.preventDefault();
+            event.clipboardData.setData("text/plain", serializeNodeForClipboard(node));
+            setStatus("Selected node copied");
+        }
+
+        function handleNodeCutEvent(event) {
+            if (isEditableTarget(event.target)) return;
+            if (state.selectedId === "root") {
+                setStatus("Root node cannot be cut");
+                return;
+            }
+
+            const node = findNode(state.tree, state.selectedId);
+            if (!node || !event.clipboardData) return;
+            event.preventDefault();
+            event.clipboardData.setData("text/plain", serializeNodeForClipboard(node));
+            removeSelectedNode("Node cut");
+        }
+
+        function handleNodePasteEvent(event) {
+            if (isEditableTarget(event.target) || !event.clipboardData) return;
+            const clipboardNode = parseClipboardNode(event.clipboardData.getData("text/plain"));
+            if (!clipboardNode) return;
+            event.preventDefault();
+            pasteClipboardNode(clipboardNode);
+        }
+
+        function serializeNodeForClipboard(node) {
+            return JSON.stringify({
+                type: CLIPBOARD_NODE_TYPE,
+                version: 1,
+                node: cloneNodeForClipboard(node)
+            }, null, 2);
+        }
+
+        function cloneNodeForClipboard(node) {
+            return {
+                title: displayTitle(node),
+                note: node.note || "",
+                children: node.children.map(cloneNodeForClipboard)
+            };
+        }
+
+        function parseClipboardNode(text) {
+            try {
+                const parsed = JSON.parse(text);
+                if (parsed && parsed.type === CLIPBOARD_NODE_TYPE && parsed.node && typeof parsed.node === "object") {
+                    return parsed.node;
+                }
+            } catch (error) {
+                return null;
+            }
+            return null;
         }
 
         function renderCloudControls() {
@@ -1511,11 +1891,15 @@ with check (true);`;
 
         function deleteSelected() {
             if (state.selectedId === "root") return;
+            removeSelectedNode("Node deleted");
+        }
+
+        function removeSelectedNode(message) {
             const parentInfo = findParent(state.tree, state.selectedId);
             if (!parentInfo) return;
             parentInfo.parent.children.splice(parentInfo.index, 1);
             state.selectedId = parentInfo.parent.id;
-            saveAndRender("Node deleted");
+            saveAndRender(message);
         }
 
         function resetTree() {
