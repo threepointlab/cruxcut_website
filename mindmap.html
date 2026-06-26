@@ -910,19 +910,61 @@ with check (true);`;
         function getSupabaseClient() {
             if (state.supabaseClient) return state.supabaseClient;
 
-            const url = elements.supabaseUrlInput.value.trim();
+            const rawUrl = elements.supabaseUrlInput.value.trim();
             const key = elements.supabaseKeyInput.value.trim();
-            if (!url || !key) {
+            if (!rawUrl || !key) {
                 setStatus("Supabase URL and anon key are required");
                 return null;
             }
 
+            const normalized = normalizeSupabaseUrl(rawUrl);
+            if (normalized.error) {
+                setStatus(normalized.error);
+                return null;
+            }
+
+            elements.supabaseUrlInput.value = normalized.url;
+            saveSupabaseConfig();
+
             state.supabaseClient = {
-                url: url.replace(/\/+$/, ""),
+                url: normalized.url,
                 key
             };
             renderCloudControls();
             return state.supabaseClient;
+        }
+
+        function normalizeSupabaseUrl(rawUrl) {
+            try {
+                const parsed = new URL(rawUrl);
+                const path = parsed.pathname.replace(/\/+$/, "");
+
+                if (parsed.hostname === "supabase.com" || parsed.hostname === "app.supabase.com") {
+                    return {
+                        error: "Use the Project URL from Supabase Project Settings > API, not the dashboard URL"
+                    };
+                }
+
+                if (!parsed.hostname.endsWith(".supabase.co") && !parsed.hostname.endsWith(".supabase.in")) {
+                    return {
+                        error: "Supabase URL should look like https://project-ref.supabase.co"
+                    };
+                }
+
+                if (path && path !== "/rest/v1") {
+                    return {
+                        error: "Supabase URL should not include a path. Use only https://project-ref.supabase.co"
+                    };
+                }
+
+                return {
+                    url: `${parsed.protocol}//${parsed.hostname}`
+                };
+            } catch (error) {
+                return {
+                    error: "Supabase URL is invalid. Use https://project-ref.supabase.co"
+                };
+            }
         }
 
         async function refreshCloudDocuments(successMessage) {
