@@ -35,14 +35,40 @@ drop trigger if exists backlog_meta_touch on backlog_meta;
 create trigger backlog_meta_touch before update on backlog_meta
   for each row execute function backlog_touch();
 
--- RLS: 로그인한(authenticated) 팀원만 read/write. anon은 아무것도 못 함.
+-- 팀 allowlist — 실제 접근 제어의 진실 원천(DB에서 강제).
+-- 여기에 없는 이메일은 로그인해도(가입이 켜져 있어도) read/write 불가.
+create table if not exists backlog_allowed_emails (
+  email text primary key
+);
+alter table backlog_allowed_emails enable row level security;
+-- 멤버는 자기 행만 조회 가능. INSERT/UPDATE/DELETE 정책 없음 → 자기 자신 추가 불가(권한 상승 방지).
+-- allowlist 수정은 SQL Editor(=프로젝트 소유자/service_role)에서만.
+drop policy if exists "member reads own allow" on backlog_allowed_emails;
+create policy "member reads own allow" on backlog_allowed_emails for select to authenticated
+  using (lower(email) = lower(auth.email()));
+
+-- 멤버십 체크(allowlist RLS 우회 위해 security definer)
+create or replace function backlog_is_member() returns boolean
+  language sql security definer stable set search_path = public, pg_temp as $$
+  select exists (
+    select 1 from backlog_allowed_emails a where lower(a.email) = lower(auth.email())
+  );
+$$;
+
+-- RLS: allowlist에 있는 팀원만 read/write. anon·미등록 로그인 사용자는 차단.
 alter table backlog_meta  enable row level security;
 alter table backlog_ideas enable row level security;
 drop policy if exists "team all meta"  on backlog_meta;
 drop policy if exists "team all ideas" on backlog_ideas;
-create policy "team all meta"  on backlog_meta  for all to authenticated using (true) with check (true);
-create policy "team all ideas" on backlog_ideas for all to authenticated using (true) with check (true);
+create policy "team all meta"  on backlog_meta  for all to authenticated
+  using (backlog_is_member()) with check (backlog_is_member());
+create policy "team all ideas" on backlog_ideas for all to authenticated
+  using (backlog_is_member()) with check (backlog_is_member());
 
--- ⚠️ 팀 전용 유지: Auth → Providers → Email 사용, 그리고
---    Auth → Settings에서 "Allow new users to sign up" 끄고 팀원을 직접 Invite(초대) 하세요.
---    (RLS는 '로그인한 사용자'만 막으므로, 누가 계정을 만들 수 있는지는 Auth 설정으로 통제)
+-- 👉 팀원 이메일을 여기 넣으세요 (이게 실제 접근 제어):
+-- insert into backlog_allowed_emails (email) values
+--   ('you@team.com'), ('teammate@team.com')
+-- on conflict do nothing;
+
+-- 추가 하드닝(권장, 필수 아님): Auth → Settings에서 "Allow new users to sign up" 끄고
+--   팀원을 Invite. allowlist가 1차 방어, 가입 차단이 2차 방어.
