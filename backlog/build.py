@@ -446,7 +446,15 @@ STORIES_HTML = """<!DOCTYPE html>
   select, input[type=search] { background:var(--card2); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:13px; }
   input[type=search] { min-width:200px; }
   .count { margin-left:auto; color:var(--mut); font-size:12px; }
-  main { padding:14px 24px 60px; display:flex; flex-direction:column; gap:9px; }
+  main { padding:14px 24px 60px; display:flex; flex-direction:column; gap:4px; }
+  .cat { margin-bottom:4px; }
+  .cathead { display:flex; align-items:center; gap:8px; padding:10px 6px; cursor:pointer; font-size:15px; font-weight:700; border-radius:8px; user-select:none; }
+  .cathead:hover { background:var(--card2); }
+  .arrow { display:inline-block; transition:transform .15s; color:var(--mut); font-size:12px; }
+  .cat.open .arrow { transform:rotate(90deg); }
+  .catcount { font-size:12px; font-weight:600; color:var(--mut); }
+  .catbody { display:none; flex-direction:column; gap:9px; padding:4px 0 12px 10px; border-left:2px solid var(--line); margin-left:9px; }
+  .cat.open .catbody { display:flex; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
   .head { display:flex; align-items:center; gap:9px; padding:12px 14px; cursor:pointer; }
   .head:hover { background:var(--card2); }
@@ -579,7 +587,13 @@ function render(){
     return ((b.impact&&b.impact[sort])||0)-((a.impact&&a.impact[sort])||0);
   });
   document.getElementById('count').textContent = `${rows.length} / ${stories.length}`;
-  document.getElementById('list').innerHTML = rows.map(card).join('');
+  const CATS = DATA.meta.storyCategories || {};
+  const groups = Object.keys(CATS).map(cid=>({label:CATS[cid], items:rows.filter(r=>r.cat===cid)})).filter(g=>g.items.length);
+  const rest = rows.filter(r=>!CATS[r.cat]); if(rest.length) groups.push({label:'기타', items:rest});
+  document.getElementById('list').innerHTML = groups.map(g=>
+    `<section class="cat open"><div class="cathead"><span class="arrow">▸</span> ${g.label} <span class="catcount">${g.items.length}</span></div>`+
+    `<div class="catbody">${g.items.map(card).join('')}</div></section>`).join('');
+  document.querySelectorAll('.cathead').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
   document.querySelectorAll('.head').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
   document.querySelectorAll('.editbtn').forEach(b=>b.addEventListener('click',()=>b.parentElement.querySelector('.editpanel').classList.toggle('on')));
   document.querySelectorAll('.editpanel').forEach(panel=>{
