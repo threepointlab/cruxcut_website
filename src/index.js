@@ -2,6 +2,28 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
 
+        // 팀 전용 게이팅: /backlog* 는 Basic Auth 필요.
+        // 비밀번호는 Worker 시크릿 BACKLOG_PASSWORD 로 설정. 미설정 시 기본 잠금(fail-closed).
+        if (url.pathname === "/backlog" || url.pathname.startsWith("/backlog/")) {
+            const pass = env.BACKLOG_PASSWORD;
+            const header = request.headers.get("Authorization") || "";
+            let ok = false;
+            if (pass && header.startsWith("Basic ")) {
+                try {
+                    const decoded = atob(header.slice(6));
+                    ok = decoded.slice(decoded.indexOf(":") + 1) === pass;
+                } catch (e) {
+                    ok = false;
+                }
+            }
+            if (!ok) {
+                return new Response("Backlog: 인증이 필요합니다.", {
+                    status: 401,
+                    headers: { "WWW-Authenticate": 'Basic realm="cruxcut-backlog"' },
+                });
+            }
+        }
+
         if (url.pathname === "/") {
             return Response.redirect(new URL("/privacy", url), 302);
         }
