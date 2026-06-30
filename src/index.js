@@ -26,6 +26,10 @@ export default {
             return env.ASSETS.fetch(new Request(new URL("/backlog/index.html", url), request));
         }
 
+        if (url.pathname === "/backlog/stories" || url.pathname === "/backlog/stories/") {
+            return env.ASSETS.fetch(new Request(new URL("/backlog/stories.html", url), request));
+        }
+
         return env.ASSETS.fetch(request);
     },
 };

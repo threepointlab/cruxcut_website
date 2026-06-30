@@ -24,6 +24,10 @@ HTML = """<!DOCTYPE html>
   header { padding:20px 24px 12px; border-bottom:1px solid var(--line); }
   h1 { margin:0 0 4px; font-size:20px; }
   .sub { color:var(--mut); font-size:12px; font-weight:400; }
+  .nav { margin-top:7px; font-size:13px; }
+  .nav a { color:var(--feature); text-decoration:none; }
+  .nav a:hover { text-decoration:underline; }
+  .nav .cur { font-weight:700; }
   .summary { display:flex; flex-wrap:wrap; gap:8px; padding:14px 24px; border-bottom:1px solid var(--line); }
   .stat { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:12px; }
   .stat b { font-size:15px; }
@@ -146,6 +150,7 @@ HTML = """<!DOCTYPE html>
 <header>
   <h1>tplab 백로그 <span class="sub" id="meta"></span></h1>
   <div class="sub" id="metanote"></div>
+  <div class="nav"><span class="cur">📋 기능</span> · <a href="./stories.html">🎯 유저스토리 →</a></div>
 </header>
 <div class="summary" id="summary"></div>
 <div class="controls">
@@ -413,3 +418,162 @@ render();
 out = HTML.replace("__DATA__", embedded)
 (ROOT / "index.html").write_text(out, encoding="utf-8")
 print(f"index.html 생성: {len(data['ideas'])} ideas, review-flagged: {sum(1 for i in data['ideas'] if i.get('review'))}")
+
+# ===================== 유저스토리 페이지 =====================
+STORIES_HTML = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tplab 유저스토리</title>
+<style>
+  :root { --bg:#0f1115; --card:#171a21; --card2:#1e222b; --line:#2a2f3a; --fg:#e8eaf0; --mut:#9aa3b2;
+          --feature:#4ea1ff; --engineering:#b48cff; --bugfix:#ff9f43; --ret:#33d39e; --mon:#ffd34e;
+          --lo:#ff6b6b; --mid:#ffc24e; --hi:#33d39e; --p1:#4ea1ff; --p2:#33d39e; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  header { padding:20px 24px 12px; border-bottom:1px solid var(--line); }
+  h1 { margin:0 0 4px; font-size:20px; }
+  .sub { color:var(--mut); font-size:12px; }
+  .nav { margin-top:7px; font-size:13px; }
+  .nav a { color:var(--feature); text-decoration:none; } .nav a:hover { text-decoration:underline; }
+  .nav .cur { font-weight:700; }
+  .summary { display:flex; flex-wrap:wrap; gap:8px; padding:14px 24px; border-bottom:1px solid var(--line); }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:12px; }
+  .stat b { font-size:15px; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:14px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:5; }
+  .controls label { font-size:12px; color:var(--mut); display:flex; flex-direction:column; gap:3px; }
+  select, input[type=search] { background:var(--card2); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:13px; }
+  input[type=search] { min-width:200px; }
+  .count { margin-left:auto; color:var(--mut); font-size:12px; }
+  main { padding:14px 24px 60px; display:flex; flex-direction:column; gap:9px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .head { display:flex; align-items:center; gap:9px; padding:12px 14px; cursor:pointer; }
+  .head:hover { background:var(--card2); }
+  .uid { font-family:ui-monospace,Menlo,monospace; font-size:12px; color:var(--mut); flex-shrink:0; }
+  .ttl { font-weight:600; flex:1; }
+  .pchip { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; white-space:nowrap; }
+  .p-P1 { background:rgba(78,161,255,.16); color:var(--p1); }
+  .p-P2 { background:rgba(51,211,158,.16); color:var(--p2); }
+  .tag { font-size:11px; color:var(--mut); background:var(--card2); border:1px solid var(--line); padding:2px 7px; border-radius:6px; white-space:nowrap; }
+  .val { background:#262b36; color:#fff; font-weight:700; border-radius:6px; padding:2px 9px; font-size:12px; white-space:nowrap; }
+  .body { padding:14px 16px 16px; border-top:1px solid var(--line); display:none; }
+  .card.open .body { display:block; }
+  .story { background:#12161d; border-left:3px solid var(--feature); border-radius:6px; padding:11px 13px; margin-bottom:12px; font-size:13.5px; line-height:1.7; }
+  .scores { display:flex; flex-direction:column; gap:6px; background:#12161d; border:1px solid var(--line); border-radius:8px; padding:11px 13px; margin-bottom:12px; }
+  .srow { display:flex; align-items:center; gap:10px; }
+  .slbl { font-size:12px; color:var(--mut); width:150px; flex-shrink:0; }
+  .track { flex:1; height:7px; background:#262b36; border-radius:4px; overflow:hidden; }
+  .fill { display:block; height:100%; border-radius:4px; }
+  .fill.lo{background:var(--lo)} .fill.mid{background:var(--mid)} .fill.hi{background:var(--hi)}
+  .sval { width:22px; text-align:right; font-size:12px; font-weight:600; }
+  .valBig { margin-top:4px; padding-top:8px; border-top:1px dashed var(--line); font-size:13px; color:var(--mut); }
+  .valBig b { font-size:18px; color:var(--fg); }
+  .flbl { font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.4px; margin:2px 0 7px; }
+  .frow { display:flex; align-items:center; gap:8px; padding:7px 10px; background:#12161d; border:1px solid var(--line); border-radius:7px; margin-bottom:6px; }
+  .badge { font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px; white-space:nowrap; text-transform:uppercase; }
+  .b-feature{background:rgba(78,161,255,.16);color:var(--feature)} .b-engineering{background:rgba(180,140,255,.16);color:var(--engineering)} .b-bugfix{background:rgba(255,159,67,.16);color:var(--bugfix)}
+  .fid { font-family:ui-monospace,Menlo,monospace; font-size:11px; color:var(--mut); flex-shrink:0; }
+  .ftt { flex:1; font-size:13px; }
+  .ez { font-size:11px; font-weight:700; padding:1px 7px; border-radius:5px; white-space:nowrap; }
+  .ez.lo{background:rgba(255,107,107,.18);color:var(--lo)} .ez.mid{background:rgba(255,194,78,.18);color:var(--mid)} .ez.hi{background:rgba(51,211,158,.18);color:var(--hi)}
+  .stt { font-size:11px; font-weight:700; padding:1px 7px; border-radius:5px; white-space:nowrap; }
+  .s-todo{background:#242a36;color:var(--mut)} .s-doing{background:rgba(78,161,255,.18);color:var(--feature)} .s-done{background:rgba(51,211,158,.18);color:var(--hi)}
+  .card.done-all { opacity:.7; }
+  .hint { color:var(--mut); font-size:12px; padding:10px 24px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>tplab 유저스토리 <span class="sub" id="meta"></span></h1>
+  <div class="nav"><a href="./index.html">📋 기능</a> · <span class="cur">🎯 유저스토리</span></div>
+</header>
+<div class="summary" id="summary"></div>
+<div class="controls">
+  <label>페르소나<select id="f-persona"><option value="">전체</option><option value="P1">P1 공유러</option><option value="P2">P2 성장러</option></select></label>
+  <label>테마<select id="f-theme"></select></label>
+  <label>정렬<select id="sort">
+    <option value="value">가치 (max Impact × Confidence)</option>
+    <option value="P1">Impact: P1</option>
+    <option value="P2">Impact: P2</option>
+    <option value="conf">Confidence</option>
+  </select></label>
+  <label>검색<input type="search" id="q" placeholder="스토리·기능..."></label>
+  <span class="count" id="count"></span>
+</div>
+<div class="hint">스토리 = 가치(Impact 페르소나별 × Confidence). 각 스토리 아래 그걸 달성하는 기능들(Ease·상태). 기능 상세/편집은 📋 기능 페이지.</div>
+<main id="list"></main>
+
+<script type="application/json" id="backlog-data">__DATA__</script>
+<script>
+const DATA = JSON.parse(document.getElementById('backlog-data').textContent);
+const personas = DATA.personas, ideas = DATA.ideas, stories = DATA.stories || [];
+const pName = Object.fromEntries(personas.map(p=>[p.id,p.name]));
+const ideaById = Object.fromEntries(ideas.map(i=>[i.id,i]));
+const STL = {todo:'할 일', doing:'진행', done:'완료'};
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function maxImpact(st){ return st.impact ? Math.max(...Object.values(st.impact)) : 0; }
+function value(st){ return maxImpact(st) * (st.confidence||0); }
+function bar(label,val){ val=val||0; const c=val>=7?'hi':val>=4?'mid':'lo';
+  return `<div class="srow"><span class="slbl">${label}</span><span class="track"><span class="fill ${c}" style="width:${val*10}%"></span></span><span class="sval">${val}</span></div>`; }
+
+document.getElementById('meta').textContent = `· ${stories.length} stories · ${ideas.length} features`;
+const byp = {P1:0,P2:0}; stories.forEach(s=>byp[s.persona]=(byp[s.persona]||0)+1);
+document.getElementById('summary').innerHTML =
+  `<div class="stat"><b>${stories.length}</b> 유저스토리</div>` +
+  `<div class="stat" style="color:var(--p1)"><b>${byp.P1||0}</b> P1 공유러</div>` +
+  `<div class="stat" style="color:var(--p2)"><b>${byp.P2||0}</b> P2 성장러</div>` +
+  `<div class="stat"><b>${ideas.length}</b> 매핑 기능</div>`;
+const themes = [...new Set(stories.map(s=>s.theme).filter(Boolean))].sort();
+document.getElementById('f-theme').innerHTML = '<option value="">전체</option>' + themes.map(t=>`<option>${t}</option>`).join('');
+['f-persona','f-theme','sort'].forEach(id=>document.getElementById(id).addEventListener('change',render));
+document.getElementById('q').addEventListener('input',render);
+
+function render(){
+  const fp=document.getElementById('f-persona').value, ft=document.getElementById('f-theme').value;
+  const sort=document.getElementById('sort').value, q=document.getElementById('q').value.trim().toLowerCase();
+  let rows = stories.filter(s=>(!fp||s.persona===fp)&&(!ft||s.theme===ft)&&(!q||JSON.stringify(s).toLowerCase().includes(q)
+    || (s.featureIds||[]).some(fid=>ideaById[fid]&&JSON.stringify(ideaById[fid]).toLowerCase().includes(q))));
+  rows.sort((a,b)=>{
+    if(sort==='value') return value(b)-value(a);
+    if(sort==='conf') return (b.confidence||0)-(a.confidence||0);
+    return ((b.impact&&b.impact[sort])||0)-((a.impact&&a.impact[sort])||0);
+  });
+  document.getElementById('count').textContent = `${rows.length} / ${stories.length}`;
+  document.getElementById('list').innerHTML = rows.map(card).join('');
+  document.querySelectorAll('.head').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+}
+function frow(fid){
+  const i=ideaById[fid]; if(!i) return `<div class="frow"><span class="fid">${esc(fid)}</span><span class="ftt" style="color:var(--lo)">(없는 기능)</span></div>`;
+  const ez = i.ease!=null ? `<span class="ez ${i.ease>=7?'hi':i.ease>=4?'mid':'lo'}">Ease ${i.ease}</span>` : '';
+  const st = i.status||'todo';
+  const ice = i.type==='feature' ? `<span class="tag">ICE ${i.iceScore||0}</span>` : '';
+  return `<div class="frow"><span class="badge b-${i.type}">${i.type}</span><span class="fid">${esc(i.id)}</span><span class="ftt">${esc(i.title)}</span>${ice}${ez}<span class="stt s-${st}">${STL[st]}</span></div>`;
+}
+function card(s){
+  const imp = s.impact ? Object.entries(s.impact).map(([k,v])=>bar(`Impact · ${k} ${pName[k]||''}`,v)).join('') : '';
+  const fids = s.featureIds || [];
+  const doneAll = fids.length && fids.every(f=>ideaById[f] && (ideaById[f].status==='done'));
+  const story = `As a <b>${esc(s.as)}</b>,<br>I want ${esc(s.want)},<br>so that <b>${esc(s.soThat)}</b>`;
+  return `<div class="card${doneAll?' done-all':''}"><div class="head">
+    <span class="uid">${esc(s.id)}</span>
+    <span class="ttl">${esc(s.want)}</span>
+    <span class="pchip p-${s.persona}">${s.persona} ${pName[s.persona]||''}</span>
+    ${s.theme?`<span class="tag">${esc(s.theme)}</span>`:''}
+    <span class="tag">${fids.length} 기능</span>
+    <span class="val">가치 ${value(s)}</span>
+  </div><div class="body">
+    <div class="story">🎯 ${story}</div>
+    <div class="scores">${imp}${bar('Confidence', s.confidence)}<div class="valBig">가치 = max(Impact) × Confidence = <b>${value(s)}</b></div></div>
+    ${s.notes?`<div class="flbl">비고</div><div style="font-size:12.5px;color:var(--mut);margin-bottom:12px">${esc(s.notes)}</div>`:''}
+    <div class="flbl">달성 기능 (${fids.length})</div>
+    ${fids.map(frow).join('')}
+  </div></div>`;
+}
+render();
+</script>
+</body>
+</html>
+"""
+(ROOT / "stories.html").write_text(STORIES_HTML.replace("__DATA__", embedded), encoding="utf-8")
+print(f"stories.html 생성: {len(data.get('stories', []))} stories")
