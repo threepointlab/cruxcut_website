@@ -4,4 +4,6 @@
 !.dev.vars.example
 .env*
 !.env.example
+.DS_Store
+backlog/data/raw/
 config.js
