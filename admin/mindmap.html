@@ -1,0 +1,2079 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Path Mindmap</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --canvas: #ffffff;
+            --paper: #ffffff;
+            --cloud: #f7f7f7;
+            --fog: #e8e8e8;
+            --steel: #c2c2c2;
+            --hairline: #e8e8e8;
+            --hairline-strong: #c2c2c2;
+            --ink: #1a1a1a;
+            --ink-deep: #000000;
+            --charcoal: #3d3d3d;
+            --graphite: #636363;
+            --primary: #024ad8;
+            --primary-bright: #296ef9;
+            --primary-deep: #0e3191;
+            --primary-soft: #c9e0fc;
+            --on-primary: #ffffff;
+            --error: #b3262b;
+            --error-soft: #f9d4d2;
+            --shadow-soft: 0 2px 8px rgba(26, 26, 26, 0.08);
+            --shadow-modal: 0 8px 24px rgba(26, 26, 26, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--canvas);
+            color: var(--ink);
+            font-family: "Forma DJR Micro", Manrope, Inter, Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            line-height: 1.38;
+            letter-spacing: 0;
+        }
+
+        button,
+        input,
+        textarea,
+        select {
+            font: inherit;
+        }
+
+        button {
+            min-height: 44px;
+            border: 1px solid var(--ink);
+            border-radius: 4px;
+            background: var(--canvas);
+            color: var(--ink);
+            cursor: pointer;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.4;
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+        }
+
+        button:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            border-color: var(--steel);
+            color: var(--graphite);
+            opacity: 1;
+        }
+
+        .primary {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: var(--on-primary);
+        }
+
+        .primary:hover:not(:disabled) {
+            border-color: var(--primary-deep);
+            background: var(--primary-deep);
+            color: var(--on-primary);
+        }
+
+        .danger {
+            border-color: var(--error);
+            background: var(--canvas);
+            color: var(--error);
+        }
+
+        .muted {
+            border-color: var(--steel);
+            color: var(--charcoal);
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            min-height: 64px;
+            padding: 0 32px;
+            border-bottom: 1px solid var(--hairline);
+            background: var(--canvas);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            min-height: 36px;
+            border: 1px solid var(--ink);
+            border-radius: 4px;
+            background: var(--canvas);
+            color: var(--ink);
+            padding: 0;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .back-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .toolbar-title {
+            min-width: 180px;
+        }
+
+        .toolbar-title h1 {
+            margin: 0;
+            color: var(--ink);
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.17;
+            letter-spacing: 0;
+        }
+
+        .toolbar-title p {
+            margin: 4px 0 0;
+            color: var(--graphite);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .view-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            border: 1px solid var(--steel);
+            border-radius: 4px;
+            background: var(--canvas);
+            padding: 3px;
+        }
+
+        .view-button {
+            min-height: 34px;
+            border: 0;
+            background: transparent;
+            color: var(--ink);
+            padding: 6px 12px;
+        }
+
+        .view-button.is-active {
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .view-button.is-active:hover:not(:disabled) {
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 36px;
+            border: 1px solid var(--hairline);
+            border-radius: 9999px;
+            background: var(--cloud);
+            color: var(--graphite);
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 9999px;
+            background: var(--steel);
+        }
+
+        .sync-indicator[data-status="dirty"] .sync-dot {
+            background: var(--primary);
+        }
+
+        .sync-indicator[data-status="syncing"] .sync-dot {
+            background: var(--primary-bright);
+        }
+
+        .sync-indicator[data-status="synced"] .sync-dot {
+            background: var(--ink);
+        }
+
+        .sync-indicator[data-status="error"] {
+            border-color: var(--error-soft);
+            background: #fff7f7;
+            color: var(--error);
+        }
+
+        .sync-indicator[data-status="error"] .sync-dot {
+            background: var(--error);
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+            background: var(--cloud);
+        }
+
+        .canvas {
+            min-width: 0;
+            overflow: auto;
+            padding: 32px;
+        }
+
+        .tree {
+            display: inline-block;
+            min-width: 100%;
+            padding: 8px 0 40px;
+        }
+
+        .view-panel[hidden] {
+            display: none;
+        }
+
+        .table-view {
+            min-width: 760px;
+            border: 1px solid var(--hairline);
+            border-radius: 16px;
+            overflow: hidden;
+            background: var(--canvas);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .node-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .node-table th,
+        .node-table td {
+            border-bottom: 1px solid var(--hairline);
+            padding: 12px 16px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .node-table th {
+            background: var(--cloud);
+            color: var(--graphite);
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .node-table td {
+            color: var(--ink);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .node-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .node-table tbody tr {
+            cursor: pointer;
+        }
+
+        .node-table tbody tr:hover td {
+            background: var(--cloud);
+        }
+
+        .node-table tbody tr.is-selected td {
+            background: var(--primary-soft);
+        }
+
+        .node-table .path-cell {
+            width: 48%;
+            color: var(--charcoal);
+        }
+
+        .node-table .name-cell {
+            width: 22%;
+            font-weight: 700;
+        }
+
+        .node-table .note-cell {
+            width: 30%;
+            color: var(--graphite);
+        }
+
+        .node-table .table-empty {
+            color: var(--graphite);
+            text-align: center;
+        }
+
+        .node-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            min-height: 48px;
+            position: relative;
+        }
+
+        .node-row + .children {
+            margin-left: 30px;
+            padding-left: 24px;
+            border-left: 1px solid var(--steel);
+        }
+
+        .children.is-collapsed {
+            display: none;
+        }
+
+        .node-stack {
+            margin: 12px 0;
+        }
+
+        .toggle {
+            width: 32px;
+            min-width: 32px;
+            height: 32px;
+            min-height: 32px;
+            margin-top: 8px;
+            padding: 0;
+            border-radius: 4px;
+            border-color: var(--steel);
+            color: var(--ink);
+            font-size: 16px;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        .toggle.empty {
+            border-color: transparent;
+            background: transparent;
+            cursor: default;
+        }
+
+        .node-card {
+            width: 260px;
+            min-height: 48px;
+            border: 1px solid var(--hairline);
+            border-radius: 16px;
+            background: var(--paper);
+            box-shadow: var(--shadow-soft);
+            color: var(--ink);
+            padding: 16px;
+            text-align: left;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .node-card:hover {
+            border-color: var(--steel);
+            color: var(--ink);
+        }
+
+        .node-card.is-selected {
+            border-color: var(--primary);
+            box-shadow: inset 4px 0 0 var(--primary), var(--shadow-modal);
+        }
+
+        .node-title {
+            overflow-wrap: anywhere;
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .node-note {
+            display: -webkit-box;
+            overflow: hidden;
+            margin-top: 8px;
+            color: var(--charcoal);
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.5;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .node-meta {
+            margin-top: 12px;
+            color: var(--graphite);
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.33;
+        }
+
+        .inspector {
+            min-width: 0;
+            height: 100%;
+            overflow: auto;
+            border-left: 1px solid var(--hairline);
+            background: var(--canvas);
+            padding: 24px;
+        }
+
+        .panel {
+            display: grid;
+            gap: 20px;
+        }
+
+        .inspector-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            margin: -24px -24px 0;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--hairline);
+            background: var(--canvas);
+        }
+
+        .tab-button {
+            border-color: var(--steel);
+            background: var(--canvas);
+            color: var(--ink);
+        }
+
+        .tab-button.is-active {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .tab-button.is-active:hover:not(:disabled) {
+            border-color: var(--ink);
+            background: var(--ink);
+            color: var(--on-primary);
+        }
+
+        .tab-panel {
+            display: grid;
+            gap: 20px;
+        }
+
+        .tab-panel[hidden] {
+            display: none;
+        }
+
+        .panel h2 {
+            margin: 0;
+            color: var(--ink);
+            font-size: 24px;
+            font-weight: 500;
+            line-height: 1.17;
+            letter-spacing: 0;
+        }
+
+        .panel-section {
+            display: grid;
+            gap: 16px;
+            padding-top: 20px;
+            border-top: 1px solid var(--hairline);
+        }
+
+        .section-heading {
+            display: grid;
+            gap: 4px;
+        }
+
+        .section-heading h2,
+        .section-heading h3 {
+            margin: 0;
+        }
+
+        .section-heading h3 {
+            color: var(--ink);
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .section-heading p,
+        .helper-text {
+            margin: 0;
+            color: var(--graphite);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .field {
+            display: grid;
+            gap: 8px;
+        }
+
+        .field label {
+            color: var(--graphite);
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .field input,
+        .field textarea,
+        .field select {
+            width: 100%;
+            min-height: 44px;
+            border: 1px solid var(--steel);
+            border-radius: 4px;
+            background: var(--canvas);
+            color: var(--ink);
+            padding: 12px 16px;
+            font-size: 16px;
+            line-height: 1.38;
+            letter-spacing: 0;
+        }
+
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
+            border-color: var(--ink);
+            outline: 0;
+        }
+
+        .field textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row button {
+            flex: 1;
+        }
+
+        .schema-details {
+            border: 1px solid var(--hairline);
+            border-radius: 16px;
+            background: var(--cloud);
+            padding: 16px;
+        }
+
+        .schema-details summary {
+            cursor: pointer;
+            color: var(--ink);
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .schema-box {
+            width: 100%;
+            min-height: 180px;
+            margin-top: 12px;
+            border: 1px solid var(--steel);
+            border-radius: 4px;
+            background: var(--canvas);
+            color: var(--ink);
+            padding: 12px 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 12px;
+            line-height: 1.45;
+            resize: vertical;
+        }
+
+        .export-box {
+            width: 100%;
+            min-height: 220px;
+            border: 1px solid var(--steel);
+            border-radius: 4px;
+            background: var(--cloud);
+            color: var(--ink);
+            padding: 12px 16px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+            font-size: 12px;
+            line-height: 1.45;
+            resize: vertical;
+        }
+
+        .status {
+            min-height: 18px;
+            color: var(--graphite);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 860px) {
+            .toolbar {
+                align-items: stretch;
+                flex-direction: column;
+                padding: 16px;
+            }
+
+            .toolbar-actions {
+                justify-content: flex-start;
+            }
+
+            .workspace {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
+            }
+
+            .inspector {
+                height: auto;
+                max-height: none;
+                border-top: 1px solid var(--hairline);
+                border-left: 0;
+            }
+
+            .canvas {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="toolbar">
+            <div class="toolbar-left">
+                <a class="back-link" href="/admin" aria-label="Back to admin">‹</a>
+                <div class="toolbar-title">
+                    <h1>App Path Mindmap</h1>
+                    <p>도메인 중립 트리 편집기</p>
+                </div>
+            </div>
+            <div class="toolbar-actions">
+                <div class="view-switcher" role="tablist" aria-label="View mode">
+                    <button id="mindmapViewButton" class="view-button is-active" type="button" role="tab" aria-selected="true">Mindmap</button>
+                    <button id="tableViewButton" class="view-button" type="button" role="tab" aria-selected="false">Table</button>
+                </div>
+                <div id="syncIndicator" class="sync-indicator" data-status="local" aria-live="polite">
+                    <span class="sync-dot" aria-hidden="true"></span>
+                    <span id="syncLabel">Local only</span>
+                </div>
+                <button id="resetButton" type="button">Reset</button>
+                <button id="copyButton" type="button">Copy YAML</button>
+                <button id="downloadButton" class="primary" type="button">Download YAML</button>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <section class="canvas" aria-label="Mindmap canvas">
+                <div id="tree" class="tree view-panel"></div>
+                <div id="tableView" class="table-view view-panel" hidden>
+                    <table class="node-table">
+                        <thead>
+                            <tr>
+                                <th class="path-cell">Path</th>
+                                <th class="name-cell">Node</th>
+                                <th class="note-cell">Note</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <aside class="inspector" aria-label="Selected node editor">
+                <div class="panel">
+                    <div class="inspector-tabs" role="tablist" aria-label="Inspector sections">
+                        <button id="nodeTabButton" class="tab-button is-active" type="button" role="tab" aria-selected="true" aria-controls="nodePanel">Node</button>
+                        <button id="databaseTabButton" class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="databasePanel">Database</button>
+                    </div>
+
+                    <section id="nodePanel" class="tab-panel" role="tabpanel" aria-labelledby="nodeTabButton">
+                        <h2>Selected Node</h2>
+
+                        <div class="field">
+                            <label for="titleInput">Title</label>
+                            <input id="titleInput" type="text" autocomplete="off">
+                        </div>
+
+                        <div class="field">
+                            <label for="noteInput">Note</label>
+                            <textarea id="noteInput"></textarea>
+                        </div>
+
+                        <div class="button-grid">
+                            <button id="addChildButton" type="button">Add Child</button>
+                            <button id="addSiblingButton" type="button">Add Sibling</button>
+                            <button id="moveUpButton" type="button">Move Up</button>
+                            <button id="moveDownButton" type="button">Move Down</button>
+                        </div>
+
+                        <div class="field">
+                            <label for="parentSelect">Parent</label>
+                            <select id="parentSelect"></select>
+                        </div>
+
+                        <button id="deleteButton" class="danger" type="button">Delete Node</button>
+                    </section>
+
+                    <section id="databasePanel" class="tab-panel" role="tabpanel" aria-labelledby="databaseTabButton" hidden>
+                        <div class="section-heading">
+                            <h2>Database</h2>
+                            <p>Supabase URL과 anon key를 이 브라우저에 저장해 트리를 공유 DB와 동기화합니다.</p>
+                        </div>
+
+                        <div class="field">
+                            <label for="supabaseUrlInput">Supabase URL</label>
+                            <input id="supabaseUrlInput" type="url" autocomplete="off" placeholder="https://project.supabase.co">
+                            <p id="supabaseUrlHelp" class="helper-text"></p>
+                        </div>
+
+                        <div class="field">
+                            <label for="supabaseKeyInput">Anon Key</label>
+                            <input id="supabaseKeyInput" type="password" autocomplete="off" placeholder="eyJ...">
+                        </div>
+
+                        <div class="field">
+                            <label for="documentTitleInput">Document Title</label>
+                            <input id="documentTitleInput" type="text" autocomplete="off" value="App Path Map">
+                        </div>
+
+                        <div class="button-row">
+                            <button id="connectButton" type="button">Connect</button>
+                            <button id="saveCloudButton" class="primary" type="button">Save Cloud</button>
+                        </div>
+
+                        <div class="field">
+                            <label for="remoteDocumentSelect">Remote Documents</label>
+                            <select id="remoteDocumentSelect"></select>
+                        </div>
+
+                        <div class="button-row">
+                            <button id="loadCloudButton" type="button">Load</button>
+                            <button id="newCloudButton" class="muted" type="button">New Copy</button>
+                        </div>
+
+                        <details class="schema-details">
+                            <summary>Supabase setup SQL</summary>
+                            <textarea id="schemaSqlOutput" class="schema-box" readonly></textarea>
+                        </details>
+                    </section>
+
+                    <div class="field">
+                        <label for="yamlOutput">YAML Export</label>
+                        <textarea id="yamlOutput" class="export-box" readonly></textarea>
+                    </div>
+
+                    <div id="status" class="status" aria-live="polite"></div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="../config.js"></script>
+    <script>
+        const STORAGE_KEY = "cruxcut.pathMindmap.v1";
+        const SUPABASE_CONFIG_KEY = "cruxcut.pathMindmap.supabase.v1";
+        const REMOTE_DOCUMENT_ID_KEY = "cruxcut.pathMindmap.remoteDocumentId.v1";
+        const TABLE_NAME = "mindmap_documents";
+        const AUTOSAVE_DELAY_MS = 5000;
+        const CLIPBOARD_NODE_TYPE = "cruxcut.mindmap.node";
+        const SETUP_SQL = `create table if not exists public.mindmap_documents (
+  id uuid primary key default gen_random_uuid(),
+  title text not null default 'App Path Map',
+  tree jsonb not null,
+  yaml text not null default '',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.mindmap_documents enable row level security;
+
+create policy "Allow public read mindmap documents"
+on public.mindmap_documents
+for select
+to anon
+using (true);
+
+create policy "Allow public insert mindmap documents"
+on public.mindmap_documents
+for insert
+to anon
+with check (true);
+
+create policy "Allow public update mindmap documents"
+on public.mindmap_documents
+for update
+to anon
+using (true)
+with check (true);`;
+        const DEFAULT_TREE = {
+            id: "root",
+            title: "앱",
+            note: "",
+            children: []
+        };
+
+        const state = {
+            tree: loadTree(),
+            selectedId: "root",
+            collapsedIds: new Set(),
+            supabaseClient: null,
+            remoteDocumentId: localStorage.getItem(REMOTE_DOCUMENT_ID_KEY) || "",
+            remoteDocuments: [],
+            activeInspectorTab: "node",
+            syncStatus: "local",
+            syncMessage: "Local only",
+            autosaveTimerId: 0,
+            autosaveInFlight: false,
+            autosaveQueued: false,
+            viewMode: "mindmap"
+        };
+
+        const elements = {
+            tree: document.getElementById("tree"),
+            tableView: document.getElementById("tableView"),
+            tableBody: document.getElementById("tableBody"),
+            mindmapViewButton: document.getElementById("mindmapViewButton"),
+            tableViewButton: document.getElementById("tableViewButton"),
+            syncIndicator: document.getElementById("syncIndicator"),
+            syncLabel: document.getElementById("syncLabel"),
+            nodeTabButton: document.getElementById("nodeTabButton"),
+            databaseTabButton: document.getElementById("databaseTabButton"),
+            nodePanel: document.getElementById("nodePanel"),
+            databasePanel: document.getElementById("databasePanel"),
+            titleInput: document.getElementById("titleInput"),
+            noteInput: document.getElementById("noteInput"),
+            addChildButton: document.getElementById("addChildButton"),
+            addSiblingButton: document.getElementById("addSiblingButton"),
+            moveUpButton: document.getElementById("moveUpButton"),
+            moveDownButton: document.getElementById("moveDownButton"),
+            parentSelect: document.getElementById("parentSelect"),
+            deleteButton: document.getElementById("deleteButton"),
+            resetButton: document.getElementById("resetButton"),
+            copyButton: document.getElementById("copyButton"),
+            downloadButton: document.getElementById("downloadButton"),
+            supabaseUrlInput: document.getElementById("supabaseUrlInput"),
+            supabaseKeyInput: document.getElementById("supabaseKeyInput"),
+            documentTitleInput: document.getElementById("documentTitleInput"),
+            connectButton: document.getElementById("connectButton"),
+            saveCloudButton: document.getElementById("saveCloudButton"),
+            remoteDocumentSelect: document.getElementById("remoteDocumentSelect"),
+            loadCloudButton: document.getElementById("loadCloudButton"),
+            newCloudButton: document.getElementById("newCloudButton"),
+            schemaSqlOutput: document.getElementById("schemaSqlOutput"),
+            yamlOutput: document.getElementById("yamlOutput"),
+            status: document.getElementById("status")
+        };
+
+        initializeSupabaseFields();
+        bindEvents();
+        render();
+
+        function bindEvents() {
+            elements.titleInput.addEventListener("input", () => {
+                const node = findNode(state.tree, state.selectedId);
+                if (!node) return;
+                node.title = elements.titleInput.value;
+                saveAndRender("Saved");
+            });
+
+            elements.noteInput.addEventListener("input", () => {
+                const node = findNode(state.tree, state.selectedId);
+                if (!node) return;
+                node.note = elements.noteInput.value;
+                saveAndRender("Saved");
+            });
+
+            elements.addChildButton.addEventListener("click", addChild);
+            elements.addSiblingButton.addEventListener("click", addSibling);
+            elements.moveUpButton.addEventListener("click", () => moveSelected(-1));
+            elements.moveDownButton.addEventListener("click", () => moveSelected(1));
+            elements.deleteButton.addEventListener("click", deleteSelected);
+            elements.parentSelect.addEventListener("change", changeParent);
+            elements.resetButton.addEventListener("click", resetTree);
+            elements.copyButton.addEventListener("click", copyYaml);
+            elements.downloadButton.addEventListener("click", downloadYaml);
+            elements.mindmapViewButton.addEventListener("click", () => setViewMode("mindmap"));
+            elements.tableViewButton.addEventListener("click", () => setViewMode("table"));
+            elements.nodeTabButton.addEventListener("click", () => setInspectorTab("node"));
+            elements.databaseTabButton.addEventListener("click", () => setInspectorTab("database"));
+            elements.connectButton.addEventListener("click", connectSupabase);
+            elements.saveCloudButton.addEventListener("click", () => saveCloudDocument());
+            elements.loadCloudButton.addEventListener("click", loadCloudDocument);
+            elements.newCloudButton.addEventListener("click", createCloudCopy);
+            elements.remoteDocumentSelect.addEventListener("change", () => {
+                state.remoteDocumentId = elements.remoteDocumentSelect.value;
+                localStorage.setItem(REMOTE_DOCUMENT_ID_KEY, state.remoteDocumentId);
+            });
+            elements.documentTitleInput.addEventListener("input", () => {
+                saveSupabaseConfig();
+                scheduleCloudAutosave();
+            });
+            elements.supabaseUrlInput.addEventListener("change", () => {
+                saveSupabaseConfig();
+                state.supabaseClient = null;
+                updateSyncStatus(hasSupabaseConfig() ? "dirty" : "local", hasSupabaseConfig() ? "Ready to sync" : "Local only");
+                renderCloudControls();
+            });
+            elements.supabaseKeyInput.addEventListener("change", () => {
+                saveSupabaseConfig();
+                state.supabaseClient = null;
+                updateSyncStatus(hasSupabaseConfig() ? "dirty" : "local", hasSupabaseConfig() ? "Ready to sync" : "Local only");
+                renderCloudControls();
+            });
+            document.addEventListener("keydown", handleNodeClipboardShortcut);
+            document.addEventListener("copy", handleNodeCopyEvent);
+            document.addEventListener("cut", handleNodeCutEvent);
+            document.addEventListener("paste", handleNodePasteEvent);
+        }
+
+        function initializeSupabaseFields() {
+            const config = loadSupabaseConfig();
+            elements.supabaseUrlInput.value = config.url;
+            elements.supabaseUrlInput.readOnly = config.hasConfiguredUrl;
+            document.getElementById("supabaseUrlHelp").textContent = config.hasConfiguredUrl
+                ? "Loaded from config.js"
+                : "Set SUPABASE_URL in config.js or enter it here.";
+            elements.supabaseKeyInput.value = config.key;
+            elements.documentTitleInput.value = config.documentTitle || "App Path Map";
+            elements.schemaSqlOutput.value = SETUP_SQL;
+        }
+
+        function loadSupabaseConfig() {
+            const configuredUrl = getConfiguredSupabaseUrl();
+            const hasConfiguredUrl = Boolean(configuredUrl);
+            try {
+                const saved = localStorage.getItem(SUPABASE_CONFIG_KEY);
+                if (!saved) return { url: configuredUrl, key: "", documentTitle: "App Path Map", hasConfiguredUrl };
+                const parsed = JSON.parse(saved);
+                return {
+                    url: configuredUrl || (typeof parsed.url === "string" ? parsed.url : ""),
+                    key: typeof parsed.key === "string" ? parsed.key : "",
+                    documentTitle: typeof parsed.documentTitle === "string" ? parsed.documentTitle : "App Path Map",
+                    hasConfiguredUrl
+                };
+            } catch (error) {
+                return { url: configuredUrl, key: "", documentTitle: "App Path Map", hasConfiguredUrl };
+            }
+        }
+
+        function getConfiguredSupabaseUrl() {
+            const config = window.CRUXCUT_CONFIG || {};
+            return typeof config.SUPABASE_URL === "string" ? config.SUPABASE_URL.trim() : "";
+        }
+
+        function saveSupabaseConfig() {
+            localStorage.setItem(SUPABASE_CONFIG_KEY, JSON.stringify({
+                url: elements.supabaseUrlInput.value.trim(),
+                key: elements.supabaseKeyInput.value.trim(),
+                documentTitle: elements.documentTitleInput.value.trim() || "App Path Map"
+            }));
+        }
+
+        function loadTree() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) return structuredClone(DEFAULT_TREE);
+                const parsed = JSON.parse(saved);
+                return normalizeNode(parsed, "root");
+            } catch (error) {
+                return structuredClone(DEFAULT_TREE);
+            }
+        }
+
+        function normalizeNode(node, fallbackId) {
+            return {
+                id: typeof node.id === "string" && node.id ? node.id : fallbackId,
+                title: typeof node.title === "string" ? node.title : "Untitled",
+                note: typeof node.note === "string" ? node.note : "",
+                children: Array.isArray(node.children)
+                    ? node.children.map((child, index) => normalizeNode(child, createId(index)))
+                    : []
+            };
+        }
+
+        function normalizePastedNode(node) {
+            return {
+                id: createId(),
+                title: typeof node.title === "string" && node.title.trim() ? node.title : "Untitled",
+                note: typeof node.note === "string" ? node.note : "",
+                children: Array.isArray(node.children) ? node.children.map(normalizePastedNode) : []
+            };
+        }
+
+        function saveAndRender(message) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tree));
+            render();
+            setStatus(message);
+            scheduleCloudAutosave();
+        }
+
+        function render() {
+            if (!findNode(state.tree, state.selectedId)) {
+                state.selectedId = "root";
+            }
+
+            elements.tree.replaceChildren(renderNode(state.tree));
+            renderTable();
+            renderViewMode();
+            renderInspector();
+            renderInspectorTabs();
+            renderCloudControls();
+            renderSyncStatus();
+            renderYaml();
+        }
+
+        function setViewMode(viewMode) {
+            state.viewMode = viewMode;
+            renderViewMode();
+        }
+
+        function renderViewMode() {
+            const isMindmap = state.viewMode === "mindmap";
+            elements.tree.hidden = !isMindmap;
+            elements.tableView.hidden = isMindmap;
+            elements.mindmapViewButton.classList.toggle("is-active", isMindmap);
+            elements.tableViewButton.classList.toggle("is-active", !isMindmap);
+            elements.mindmapViewButton.setAttribute("aria-selected", String(isMindmap));
+            elements.tableViewButton.setAttribute("aria-selected", String(!isMindmap));
+        }
+
+        function setInspectorTab(tabName) {
+            state.activeInspectorTab = tabName;
+            renderInspectorTabs();
+        }
+
+        function renderInspectorTabs() {
+            const isNodeTab = state.activeInspectorTab === "node";
+            elements.nodeTabButton.classList.toggle("is-active", isNodeTab);
+            elements.databaseTabButton.classList.toggle("is-active", !isNodeTab);
+            elements.nodeTabButton.setAttribute("aria-selected", String(isNodeTab));
+            elements.databaseTabButton.setAttribute("aria-selected", String(!isNodeTab));
+            elements.nodePanel.hidden = !isNodeTab;
+            elements.databasePanel.hidden = isNodeTab;
+        }
+
+        function renderNode(node) {
+            const stack = document.createElement("div");
+            stack.className = "node-stack";
+
+            const row = document.createElement("div");
+            row.className = "node-row";
+
+            const hasChildren = node.children.length > 0;
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = hasChildren ? "toggle" : "toggle empty";
+            toggle.textContent = hasChildren && state.collapsedIds.has(node.id) ? "+" : hasChildren ? "-" : "";
+            toggle.title = hasChildren ? "Collapse or expand" : "";
+            toggle.disabled = !hasChildren;
+            toggle.addEventListener("click", (event) => {
+                event.stopPropagation();
+                if (state.collapsedIds.has(node.id)) {
+                    state.collapsedIds.delete(node.id);
+                } else {
+                    state.collapsedIds.add(node.id);
+                }
+                render();
+            });
+
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = node.id === state.selectedId ? "node-card is-selected" : "node-card";
+            card.addEventListener("click", () => {
+                state.selectedId = node.id;
+                render();
+            });
+
+            const title = document.createElement("div");
+            title.className = "node-title";
+            title.textContent = displayTitle(node);
+            card.append(title);
+
+            if (node.note.trim()) {
+                const note = document.createElement("div");
+                note.className = "node-note";
+                note.textContent = node.note;
+                card.append(note);
+            }
+
+            const meta = document.createElement("div");
+            meta.className = "node-meta";
+            meta.textContent = hasChildren ? `${node.children.length} child node${node.children.length > 1 ? "s" : ""}` : "No children";
+            card.append(meta);
+
+            row.append(toggle, card);
+            stack.append(row);
+
+            if (hasChildren) {
+                const children = document.createElement("div");
+                children.className = state.collapsedIds.has(node.id) ? "children is-collapsed" : "children";
+                node.children.forEach((child) => children.append(renderNode(child)));
+                stack.append(children);
+            }
+
+            return stack;
+        }
+
+        function renderInspector() {
+            const node = findNode(state.tree, state.selectedId);
+            const parentInfo = findParent(state.tree, state.selectedId);
+            const isRoot = state.selectedId === "root";
+            const siblings = parentInfo ? parentInfo.parent.children : [state.tree];
+            const index = siblings.findIndex((item) => item.id === state.selectedId);
+
+            elements.titleInput.value = node ? node.title : "";
+            elements.noteInput.value = node ? node.note : "";
+            elements.addSiblingButton.disabled = isRoot;
+            elements.moveUpButton.disabled = isRoot || index <= 0;
+            elements.moveDownButton.disabled = isRoot || index < 0 || index >= siblings.length - 1;
+            elements.deleteButton.disabled = isRoot;
+            elements.parentSelect.disabled = isRoot;
+
+            renderParentOptions();
+        }
+
+        function renderParentOptions() {
+            const options = [];
+            collectParentOptions(state.tree, options, 0);
+            elements.parentSelect.replaceChildren();
+
+            const currentParent = findParent(state.tree, state.selectedId);
+            const currentParentId = currentParent ? currentParent.parent.id : "";
+
+            options.forEach((option) => {
+                const item = document.createElement("option");
+                item.value = option.id;
+                item.textContent = `${"  ".repeat(option.depth)}${displayTitle(option)}`;
+                item.disabled = option.disabled;
+                item.selected = option.id === currentParentId;
+                elements.parentSelect.append(item);
+            });
+        }
+
+        function collectParentOptions(node, options, depth) {
+            const selected = findNode(state.tree, state.selectedId);
+            const isSelected = node.id === state.selectedId;
+            const isDescendant = selected ? containsNode(selected, node.id) : false;
+
+            options.push({
+                id: node.id,
+                title: node.title,
+                note: node.note,
+                children: node.children,
+                depth,
+                disabled: isSelected || isDescendant
+            });
+
+            node.children.forEach((child) => collectParentOptions(child, options, depth + 1));
+        }
+
+        function renderYaml() {
+            elements.yamlOutput.value = toYaml({
+                title: "App Path Map",
+                root: state.tree
+            });
+        }
+
+        function renderTable() {
+            const rows = flattenTreeRows(state.tree);
+            elements.tableBody.replaceChildren();
+
+            if (rows.length === 0) {
+                const row = document.createElement("tr");
+                const cell = document.createElement("td");
+                cell.className = "table-empty";
+                cell.colSpan = 3;
+                cell.textContent = "No nodes";
+                row.append(cell);
+                elements.tableBody.append(row);
+                return;
+            }
+
+            rows.forEach((item) => {
+                const row = document.createElement("tr");
+                row.dataset.nodeId = item.id;
+                if (item.id === state.selectedId) {
+                    row.className = "is-selected";
+                }
+                row.addEventListener("click", () => {
+                    state.selectedId = item.id;
+                    render();
+                });
+
+                const pathCell = document.createElement("td");
+                pathCell.className = "path-cell";
+                pathCell.textContent = item.path;
+
+                const nameCell = document.createElement("td");
+                nameCell.className = "name-cell";
+                nameCell.textContent = item.title;
+
+                const noteCell = document.createElement("td");
+                noteCell.className = "note-cell";
+                noteCell.textContent = item.note;
+
+                row.append(pathCell, nameCell, noteCell);
+                elements.tableBody.append(row);
+            });
+        }
+
+        function flattenTreeRows(node, ancestors = []) {
+            const title = displayTitle(node);
+            const pathParts = [...ancestors, title];
+            const rows = [{
+                id: node.id,
+                path: pathParts.join(" / "),
+                title,
+                note: node.note || ""
+            }];
+
+            node.children.forEach((child) => {
+                rows.push(...flattenTreeRows(child, pathParts));
+            });
+
+            return rows;
+        }
+
+        async function handleNodeClipboardShortcut(event) {
+            if (!isClipboardShortcut(event) || isEditableTarget(event.target)) return;
+
+            if (event.key.toLowerCase() === "c") {
+                event.preventDefault();
+                await copySelectedNodeToClipboard();
+                return;
+            }
+
+            if (event.key.toLowerCase() === "x") {
+                event.preventDefault();
+                await cutSelectedNodeToClipboard();
+                return;
+            }
+
+            if (event.key.toLowerCase() === "v") {
+                event.preventDefault();
+                await pasteClipboardNodeAsChild();
+            }
+        }
+
+        function isClipboardShortcut(event) {
+            const key = event.key.toLowerCase();
+            return (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && (key === "c" || key === "x" || key === "v");
+        }
+
+        function isEditableTarget(target) {
+            if (!(target instanceof Element)) return false;
+            return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+        }
+
+        async function copySelectedNodeToClipboard() {
+            const node = findNode(state.tree, state.selectedId);
+            if (!node) return;
+
+            const text = serializeNodeForClipboard(node);
+
+            try {
+                await navigator.clipboard.writeText(text);
+                setStatus("Selected node copied");
+            } catch (error) {
+                setStatus("Could not copy selected node");
+            }
+        }
+
+        async function cutSelectedNodeToClipboard() {
+            if (state.selectedId === "root") {
+                setStatus("Root node cannot be cut");
+                return;
+            }
+
+            const node = findNode(state.tree, state.selectedId);
+            if (!node) return;
+
+            try {
+                await navigator.clipboard.writeText(serializeNodeForClipboard(node));
+                removeSelectedNode("Node cut");
+            } catch (error) {
+                setStatus("Could not cut selected node");
+            }
+        }
+
+        async function pasteClipboardNodeAsChild() {
+            const parent = findNode(state.tree, state.selectedId);
+            if (!parent) return;
+
+            let text = "";
+            try {
+                text = await navigator.clipboard.readText();
+            } catch (error) {
+                setStatus("Could not read clipboard");
+                return;
+            }
+
+            const clipboardNode = parseClipboardNode(text);
+            pasteClipboardNode(clipboardNode);
+        }
+
+        function pasteClipboardNode(clipboardNode) {
+            if (!clipboardNode) {
+                setStatus("Clipboard does not contain a mindmap node");
+                return false;
+            }
+
+            const parent = findNode(state.tree, state.selectedId);
+            if (!parent) return false;
+            const pastedNode = normalizePastedNode(clipboardNode);
+            parent.children.push(pastedNode);
+            state.selectedId = pastedNode.id;
+            state.collapsedIds.delete(parent.id);
+            saveAndRender("Node pasted");
+            return true;
+        }
+
+        function handleNodeCopyEvent(event) {
+            if (isEditableTarget(event.target)) return;
+            const node = findNode(state.tree, state.selectedId);
+            if (!node || !event.clipboardData) return;
+            event.preventDefault();
+            event.clipboardData.setData("text/plain", serializeNodeForClipboard(node));
+            setStatus("Selected node copied");
+        }
+
+        function handleNodeCutEvent(event) {
+            if (isEditableTarget(event.target)) return;
+            if (state.selectedId === "root") {
+                setStatus("Root node cannot be cut");
+                return;
+            }
+
+            const node = findNode(state.tree, state.selectedId);
+            if (!node || !event.clipboardData) return;
+            event.preventDefault();
+            event.clipboardData.setData("text/plain", serializeNodeForClipboard(node));
+            removeSelectedNode("Node cut");
+        }
+
+        function handleNodePasteEvent(event) {
+            if (isEditableTarget(event.target) || !event.clipboardData) return;
+            const clipboardNode = parseClipboardNode(event.clipboardData.getData("text/plain"));
+            if (!clipboardNode) return;
+            event.preventDefault();
+            pasteClipboardNode(clipboardNode);
+        }
+
+        function serializeNodeForClipboard(node) {
+            return JSON.stringify({
+                type: CLIPBOARD_NODE_TYPE,
+                version: 1,
+                node: cloneNodeForClipboard(node)
+            }, null, 2);
+        }
+
+        function cloneNodeForClipboard(node) {
+            return {
+                title: displayTitle(node),
+                note: node.note || "",
+                children: node.children.map(cloneNodeForClipboard)
+            };
+        }
+
+        function parseClipboardNode(text) {
+            try {
+                const parsed = JSON.parse(text);
+                if (parsed && parsed.type === CLIPBOARD_NODE_TYPE && parsed.node && typeof parsed.node === "object") {
+                    return parsed.node;
+                }
+            } catch (error) {
+                return null;
+            }
+            return null;
+        }
+
+        function renderCloudControls() {
+            const hasConfig = hasSupabaseConfig();
+            const isConnected = Boolean(state.supabaseClient);
+            elements.connectButton.textContent = isConnected ? "Refresh" : "Connect";
+            elements.saveCloudButton.disabled = !hasConfig;
+            elements.loadCloudButton.disabled = !isConnected || !state.remoteDocumentId;
+            elements.newCloudButton.disabled = !isConnected;
+            renderRemoteDocumentOptions();
+        }
+
+        function hasSupabaseConfig() {
+            return Boolean(elements.supabaseUrlInput.value.trim() && elements.supabaseKeyInput.value.trim());
+        }
+
+        function renderSyncStatus() {
+            const status = hasSupabaseConfig() ? state.syncStatus : "local";
+            const label = hasSupabaseConfig() ? state.syncMessage : "Local only";
+            elements.syncIndicator.dataset.status = status;
+            elements.syncLabel.textContent = label;
+        }
+
+        function updateSyncStatus(status, message) {
+            state.syncStatus = status;
+            state.syncMessage = message;
+            renderSyncStatus();
+        }
+
+        function scheduleCloudAutosave() {
+            window.clearTimeout(state.autosaveTimerId);
+
+            if (!hasSupabaseConfig()) {
+                updateSyncStatus("local", "Local only");
+                return;
+            }
+
+            updateSyncStatus("dirty", "Unsaved");
+            state.autosaveTimerId = window.setTimeout(() => {
+                autosaveCloudDocument();
+            }, AUTOSAVE_DELAY_MS);
+        }
+
+        async function autosaveCloudDocument() {
+            if (!hasSupabaseConfig()) {
+                updateSyncStatus("local", "Local only");
+                return;
+            }
+
+            if (state.autosaveInFlight) {
+                state.autosaveQueued = true;
+                return;
+            }
+
+            state.autosaveInFlight = true;
+            updateSyncStatus("syncing", "Syncing...");
+
+            const saved = await saveCloudDocument({
+                autosave: true,
+                skipRefresh: true
+            });
+
+            state.autosaveInFlight = false;
+
+            if (state.autosaveQueued) {
+                state.autosaveQueued = false;
+                scheduleCloudAutosave();
+                return;
+            }
+
+            if (saved) {
+                updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+            }
+        }
+
+        function renderRemoteDocumentOptions() {
+            const currentValue = state.remoteDocumentId;
+            elements.remoteDocumentSelect.replaceChildren();
+
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = state.remoteDocuments.length ? "Select a document" : "No documents loaded";
+            elements.remoteDocumentSelect.append(placeholder);
+
+            state.remoteDocuments.forEach((remoteDoc) => {
+                const option = window.document.createElement("option");
+                option.value = remoteDoc.id;
+                option.textContent = `${remoteDoc.title || "Untitled"} · ${formatDate(remoteDoc.updated_at)}`;
+                option.selected = remoteDoc.id === currentValue;
+                elements.remoteDocumentSelect.append(option);
+            });
+
+            if (currentValue && !state.remoteDocuments.some((document) => document.id === currentValue)) {
+                const option = window.document.createElement("option");
+                option.value = currentValue;
+                option.textContent = `Current document · ${currentValue.slice(0, 8)}`;
+                option.selected = true;
+                elements.remoteDocumentSelect.append(option);
+            }
+        }
+
+        async function connectSupabase() {
+            saveSupabaseConfig();
+            const client = getSupabaseClient();
+            if (!client) return;
+            const refreshed = await refreshCloudDocuments("Connected");
+            if (refreshed) {
+                updateSyncStatus("dirty", state.remoteDocumentId ? "Ready to sync" : "No cloud document");
+            }
+        }
+
+        function getSupabaseClient() {
+            if (state.supabaseClient) return state.supabaseClient;
+
+            const rawUrl = elements.supabaseUrlInput.value.trim();
+            const key = elements.supabaseKeyInput.value.trim();
+            if (!rawUrl || !key) {
+                setStatus("Supabase URL and anon key are required");
+                return null;
+            }
+
+            const normalized = normalizeSupabaseUrl(rawUrl);
+            if (normalized.error) {
+                setStatus(normalized.error);
+                return null;
+            }
+
+            elements.supabaseUrlInput.value = normalized.url;
+            saveSupabaseConfig();
+
+            state.supabaseClient = {
+                url: normalized.url,
+                key
+            };
+            renderCloudControls();
+            return state.supabaseClient;
+        }
+
+        function normalizeSupabaseUrl(rawUrl) {
+            try {
+                const parsed = new URL(rawUrl);
+                const path = parsed.pathname.replace(/\/+$/, "");
+
+                if (parsed.hostname === "supabase.com" || parsed.hostname === "app.supabase.com") {
+                    return {
+                        error: "Use the Project URL from Supabase Project Settings > API, not the dashboard URL"
+                    };
+                }
+
+                if (!parsed.hostname.endsWith(".supabase.co") && !parsed.hostname.endsWith(".supabase.in")) {
+                    return {
+                        error: "Supabase URL should look like https://project-ref.supabase.co"
+                    };
+                }
+
+                if (path && path !== "/rest/v1") {
+                    return {
+                        error: "Supabase URL should not include a path. Use only https://project-ref.supabase.co"
+                    };
+                }
+
+                return {
+                    url: `${parsed.protocol}//${parsed.hostname}`
+                };
+            } catch (error) {
+                return {
+                    error: "Supabase URL is invalid. Use https://project-ref.supabase.co"
+                };
+            }
+        }
+
+        async function refreshCloudDocuments(successMessage) {
+            const client = getSupabaseClient();
+            if (!client) return;
+
+            setStatus("Loading cloud documents...");
+            const result = await supabaseRequest({
+                query: {
+                    select: "id,title,updated_at",
+                    order: "updated_at.desc"
+                }
+            });
+
+            if (result.error) {
+                handleSupabaseError(result.error, "Could not load cloud documents");
+                return false;
+            }
+
+            state.remoteDocuments = Array.isArray(result.data) ? result.data : [];
+            if (!state.remoteDocumentId && state.remoteDocuments[0]) {
+                state.remoteDocumentId = state.remoteDocuments[0].id;
+                localStorage.setItem(REMOTE_DOCUMENT_ID_KEY, state.remoteDocumentId);
+            }
+            renderCloudControls();
+            setStatus(successMessage || "Cloud documents loaded");
+            return true;
+        }
+
+        async function saveCloudDocument(options = {}) {
+            const { autosave = false, skipRefresh = false } = options;
+            if (!autosave) {
+                window.clearTimeout(state.autosaveTimerId);
+                updateSyncStatus("syncing", "Syncing...");
+            }
+
+            const client = getSupabaseClient();
+            if (!client) {
+                if (!autosave) updateSyncStatus("local", "Local only");
+                return false;
+            }
+
+            saveSupabaseConfig();
+            renderYaml();
+
+            const title = elements.documentTitleInput.value.trim() || "App Path Map";
+            const payload = {
+                title,
+                tree: state.tree,
+                yaml: elements.yamlOutput.value,
+                updated_at: new Date().toISOString()
+            };
+
+            if (!autosave) setStatus("Saving to Supabase...");
+
+            if (state.remoteDocumentId) {
+                const result = await supabaseRequest({
+                    method: "PATCH",
+                    query: {
+                        id: `eq.${state.remoteDocumentId}`,
+                        select: "id,title,updated_at"
+                    },
+                    body: payload,
+                    prefer: "return=representation"
+                });
+
+                if (result.error) {
+                    handleSupabaseError(result.error, "Could not update cloud document");
+                    return false;
+                }
+
+                const updated = Array.isArray(result.data) ? result.data[0] : null;
+                if (!updated) {
+                    setStatus("Could not update cloud document: no matching row");
+                    updateSyncStatus("error", "Sync failed");
+                    return false;
+                }
+                upsertRemoteDocumentSummary(updated);
+                if (!autosave) setStatus("Cloud document saved");
+            } else {
+                const inserted = await insertCloudDocument(payload, "Cloud document created", { autosave });
+                if (!inserted) return false;
+            }
+
+            if (!skipRefresh) {
+                const refreshed = await refreshCloudDocuments("Cloud document saved");
+                if (!refreshed) return false;
+            } else {
+                renderCloudControls();
+            }
+
+            if (!autosave) {
+                updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+            }
+
+            return true;
+        }
+
+        async function createCloudCopy() {
+            const client = getSupabaseClient();
+            if (!client) return;
+
+            window.clearTimeout(state.autosaveTimerId);
+            updateSyncStatus("syncing", "Syncing...");
+            saveSupabaseConfig();
+            renderYaml();
+            const title = elements.documentTitleInput.value.trim() || "App Path Map";
+            const inserted = await insertCloudDocument({
+                title,
+                tree: state.tree,
+                yaml: elements.yamlOutput.value,
+                updated_at: new Date().toISOString()
+            }, "New cloud copy created");
+            if (inserted) {
+                const refreshed = await refreshCloudDocuments("New cloud copy created");
+                if (refreshed) {
+                    updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+                }
+            }
+        }
+
+        async function insertCloudDocument(payload, successMessage, options = {}) {
+            const { autosave = false } = options;
+            const client = getSupabaseClient();
+            if (!client) return false;
+
+            if (!autosave) setStatus("Creating cloud document...");
+            const result = await supabaseRequest({
+                method: "POST",
+                query: {
+                    select: "id,title,updated_at"
+                },
+                body: payload,
+                prefer: "return=representation"
+            });
+
+            if (result.error) {
+                handleSupabaseError(result.error, "Could not create cloud document");
+                return false;
+            }
+
+            const data = Array.isArray(result.data) ? result.data[0] : null;
+            if (!data) {
+                setStatus("Could not create cloud document: empty response");
+                updateSyncStatus("error", "Sync failed");
+                return false;
+            }
+
+            state.remoteDocumentId = data.id;
+            localStorage.setItem(REMOTE_DOCUMENT_ID_KEY, state.remoteDocumentId);
+            upsertRemoteDocumentSummary(data);
+            renderCloudControls();
+            if (!autosave) setStatus(successMessage);
+            return true;
+        }
+
+        async function loadCloudDocument() {
+            const client = getSupabaseClient();
+            const id = elements.remoteDocumentSelect.value || state.remoteDocumentId;
+            if (!client || !id) return;
+
+            setStatus("Loading from Supabase...");
+            const result = await supabaseRequest({
+                query: {
+                    id: `eq.${id}`,
+                    select: "id,title,tree,updated_at"
+                }
+            });
+
+            if (result.error) {
+                handleSupabaseError(result.error, "Could not load cloud document");
+                return;
+            }
+
+            const data = Array.isArray(result.data) ? result.data[0] : null;
+            if (!data) {
+                setStatus("Could not load cloud document: no matching row");
+                return;
+            }
+
+            state.tree = normalizeNode(data.tree || DEFAULT_TREE, "root");
+            state.selectedId = "root";
+            state.collapsedIds.clear();
+            state.remoteDocumentId = data.id;
+            elements.documentTitleInput.value = data.title || "App Path Map";
+            localStorage.setItem(REMOTE_DOCUMENT_ID_KEY, state.remoteDocumentId);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.tree));
+            saveSupabaseConfig();
+            upsertRemoteDocumentSummary(data);
+            render();
+            setStatus("Cloud document loaded");
+            updateSyncStatus("synced", `Synced ${formatTime(new Date())}`);
+        }
+
+        function upsertRemoteDocumentSummary(remoteDoc) {
+            if (!remoteDoc || !remoteDoc.id) return;
+            const index = state.remoteDocuments.findIndex((item) => item.id === remoteDoc.id);
+            if (index >= 0) {
+                state.remoteDocuments[index] = {
+                    ...state.remoteDocuments[index],
+                    id: remoteDoc.id,
+                    title: remoteDoc.title,
+                    updated_at: remoteDoc.updated_at
+                };
+            } else {
+                state.remoteDocuments.unshift({
+                    id: remoteDoc.id,
+                    title: remoteDoc.title,
+                    updated_at: remoteDoc.updated_at
+                });
+            }
+        }
+
+        async function supabaseRequest({ method = "GET", query = {}, body, prefer = "" }) {
+            const client = getSupabaseClient();
+            if (!client) {
+                return { data: null, error: { message: "Supabase is not configured" } };
+            }
+
+            const url = new URL(`${client.url}/rest/v1/${TABLE_NAME}`);
+            Object.entries(query).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== "") {
+                    url.searchParams.set(key, value);
+                }
+            });
+
+            try {
+                const response = await fetch(url.toString(), {
+                    method,
+                    headers: {
+                        apikey: client.key,
+                        Authorization: `Bearer ${client.key}`,
+                        "Content-Type": "application/json",
+                        ...(prefer ? { Prefer: prefer } : {})
+                    },
+                    body: body === undefined ? undefined : JSON.stringify(body)
+                });
+
+                const text = await response.text();
+                const data = text ? JSON.parse(text) : null;
+
+                if (!response.ok) {
+                    return {
+                        data: null,
+                        error: {
+                            message: data && data.message ? data.message : response.statusText,
+                            details: data
+                        }
+                    };
+                }
+
+                return { data, error: null };
+            } catch (error) {
+                return {
+                    data: null,
+                    error: {
+                        message: error instanceof Error ? error.message : String(error)
+                    }
+                };
+            }
+        }
+
+        function handleSupabaseError(error, fallbackMessage) {
+            console.error(error);
+            const detail = error && error.message ? error.message : "Unknown error";
+            setStatus(`${fallbackMessage}: ${detail}`);
+            updateSyncStatus("error", "Sync failed");
+        }
+
+        function formatDate(value) {
+            if (!value) return "not saved";
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return "not saved";
+            return date.toLocaleString([], {
+                year: "2-digit",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function formatTime(value) {
+            return value.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
+        }
+
+        function addChild() {
+            const node = findNode(state.tree, state.selectedId);
+            if (!node) return;
+            const child = createNode();
+            node.children.push(child);
+            state.selectedId = child.id;
+            state.collapsedIds.delete(node.id);
+            saveAndRender("Child added");
+        }
+
+        function addSibling() {
+            const parentInfo = findParent(state.tree, state.selectedId);
+            if (!parentInfo) return;
+            const sibling = createNode();
+            parentInfo.parent.children.splice(parentInfo.index + 1, 0, sibling);
+            state.selectedId = sibling.id;
+            saveAndRender("Sibling added");
+        }
+
+        function moveSelected(direction) {
+            const parentInfo = findParent(state.tree, state.selectedId);
+            if (!parentInfo) return;
+            const targetIndex = parentInfo.index + direction;
+            if (targetIndex < 0 || targetIndex >= parentInfo.parent.children.length) return;
+            const siblings = parentInfo.parent.children;
+            const selected = siblings[parentInfo.index];
+            siblings[parentInfo.index] = siblings[targetIndex];
+            siblings[targetIndex] = selected;
+            saveAndRender("Moved");
+        }
+
+        function changeParent() {
+            const newParentId = elements.parentSelect.value;
+            if (!newParentId || newParentId === state.selectedId) return;
+
+            const selected = findNode(state.tree, state.selectedId);
+            const oldParentInfo = findParent(state.tree, state.selectedId);
+            const newParent = findNode(state.tree, newParentId);
+
+            if (!selected || !oldParentInfo || !newParent || containsNode(selected, newParentId)) {
+                render();
+                return;
+            }
+
+            oldParentInfo.parent.children.splice(oldParentInfo.index, 1);
+            newParent.children.push(selected);
+            state.collapsedIds.delete(newParent.id);
+            saveAndRender("Parent changed");
+        }
+
+        function deleteSelected() {
+            if (state.selectedId === "root") return;
+            removeSelectedNode("Node deleted");
+        }
+
+        function removeSelectedNode(message) {
+            const parentInfo = findParent(state.tree, state.selectedId);
+            if (!parentInfo) return;
+            parentInfo.parent.children.splice(parentInfo.index, 1);
+            state.selectedId = parentInfo.parent.id;
+            saveAndRender(message);
+        }
+
+        function resetTree() {
+            const confirmed = window.confirm("Reset the mindmap stored in this browser?");
+            if (!confirmed) return;
+            state.tree = structuredClone(DEFAULT_TREE);
+            state.selectedId = "root";
+            state.collapsedIds.clear();
+            saveAndRender("Reset complete");
+        }
+
+        async function copyYaml() {
+            const yaml = elements.yamlOutput.value;
+            try {
+                await navigator.clipboard.writeText(yaml);
+                setStatus("YAML copied");
+            } catch (error) {
+                elements.yamlOutput.focus();
+                elements.yamlOutput.select();
+                document.execCommand("copy");
+                setStatus("YAML copied");
+            }
+        }
+
+        function downloadYaml() {
+            const blob = new Blob([elements.yamlOutput.value], { type: "text/yaml;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "app-path-map.yaml";
+            document.body.append(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
+            setStatus("YAML downloaded");
+        }
+
+        function createNode() {
+            return {
+                id: createId(),
+                title: "Untitled",
+                note: "",
+                children: []
+            };
+        }
+
+        function createId(seed) {
+            if (typeof crypto !== "undefined" && crypto.randomUUID) {
+                return `node_${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+            }
+            const suffix = seed ?? Math.random().toString(36).slice(2, 10);
+            return `node_${Date.now().toString(36)}_${suffix}`;
+        }
+
+        function findNode(node, id) {
+            if (node.id === id) return node;
+            for (const child of node.children) {
+                const found = findNode(child, id);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function findParent(node, childId) {
+            const index = node.children.findIndex((child) => child.id === childId);
+            if (index >= 0) {
+                return { parent: node, index };
+            }
+            for (const child of node.children) {
+                const found = findParent(child, childId);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function containsNode(node, id) {
+            if (node.id === id) return true;
+            return node.children.some((child) => containsNode(child, id));
+        }
+
+        function displayTitle(node) {
+            return node.title.trim() || "Untitled";
+        }
+
+        function setStatus(message) {
+            elements.status.textContent = message;
+            window.clearTimeout(setStatus.timeoutId);
+            setStatus.timeoutId = window.setTimeout(() => {
+                elements.status.textContent = "";
+            }, 1800);
+        }
+
+        function toYaml(value, indent = 0) {
+            if (Array.isArray(value)) {
+                if (value.length === 0) return "[]";
+                return value.map((item) => {
+                    if (isScalar(item)) {
+                        return `${spaces(indent)}- ${yamlScalar(item)}`;
+                    }
+                    const nested = toYaml(item, indent + 2);
+                    return `${spaces(indent)}-\n${nested}`;
+                }).join("\n");
+            }
+
+            if (value && typeof value === "object") {
+                return Object.entries(value).map(([key, item]) => {
+                    if (isScalar(item)) {
+                        return `${spaces(indent)}${key}: ${yamlScalar(item)}`;
+                    }
+                    if (Array.isArray(item) && item.length === 0) {
+                        return `${spaces(indent)}${key}: []`;
+                    }
+                    return `${spaces(indent)}${key}:\n${toYaml(item, indent + 2)}`;
+                }).join("\n");
+            }
+
+            return yamlScalar(value);
+        }
+
+        function isScalar(value) {
+            return value === null || ["string", "number", "boolean"].includes(typeof value);
+        }
+
+        function yamlScalar(value) {
+            if (typeof value === "string") {
+                return `"${value.replace(/\\/g, "\\\\").replace(/"/g, "\\\"").replace(/\n/g, "\\n")}"`;
+            }
+            if (value === null || value === undefined) return "null";
+            return String(value);
+        }
+
+        function spaces(count) {
+            return " ".repeat(count);
+        }
+    </script>
+</body>
+</html>
