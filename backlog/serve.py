@@ -25,13 +25,24 @@ def recompute_ice(idea):
 
 class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
-        if self.path not in ("/api/update", "/api/delete"):
+        if self.path not in ("/api/update", "/api/delete", "/api/story"):
             self.send_error(404)
             return
         length = int(self.headers.get("Content-Length", 0))
         try:
             body = json.loads(self.rfile.read(length) or b"{}")
             d = json.loads(DATA.read_text(encoding="utf-8"))
+            if self.path == "/api/story":
+                stories = d.get("stories", [])
+                sidx = next((k for k, x in enumerate(stories) if x["id"] == body.get("id")), None)
+                if sidx is None:
+                    self.send_error(404, "unknown story id")
+                    return
+                stories[sidx].update(body.get("patch", {}))
+                DATA.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+                subprocess.run(["python3", "build.py"], cwd=ROOT, check=False)
+                self._json({"ok": True, "story": stories[sidx]})
+                return
             ideas = d["ideas"]
             idx = next((k for k, x in enumerate(ideas) if x["id"] == body.get("id")), None)
             if idx is None:

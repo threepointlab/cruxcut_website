@@ -446,7 +446,15 @@ STORIES_HTML = """<!DOCTYPE html>
   select, input[type=search] { background:var(--card2); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px 8px; font-size:13px; }
   input[type=search] { min-width:200px; }
   .count { margin-left:auto; color:var(--mut); font-size:12px; }
-  main { padding:14px 24px 60px; display:flex; flex-direction:column; gap:9px; }
+  main { padding:14px 24px 60px; display:flex; flex-direction:column; gap:4px; }
+  .cat { margin-bottom:4px; }
+  .cathead { display:flex; align-items:center; gap:8px; padding:10px 6px; cursor:pointer; font-size:15px; font-weight:700; border-radius:8px; user-select:none; }
+  .cathead:hover { background:var(--card2); }
+  .arrow { display:inline-block; transition:transform .15s; color:var(--mut); font-size:12px; }
+  .cat.open .arrow { transform:rotate(90deg); }
+  .catcount { font-size:12px; font-weight:600; color:var(--mut); }
+  .catbody { display:none; flex-direction:column; gap:9px; padding:4px 0 12px 10px; border-left:2px solid var(--line); margin-left:9px; }
+  .cat.open .catbody { display:flex; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
   .head { display:flex; align-items:center; gap:9px; padding:12px 14px; cursor:pointer; }
   .head:hover { background:var(--card2); }
@@ -481,6 +489,20 @@ STORIES_HTML = """<!DOCTYPE html>
   .s-todo{background:#242a36;color:var(--mut)} .s-doing{background:rgba(78,161,255,.18);color:var(--feature)} .s-done{background:rgba(51,211,158,.18);color:var(--hi)}
   .card.done-all { opacity:.7; }
   .hint { color:var(--mut); font-size:12px; padding:10px 24px 0; }
+  .editbtn { display:none; font-size:12px; color:var(--mut); background:var(--card2); border:1px solid var(--line); border-radius:6px; padding:3px 10px; cursor:pointer; margin-bottom:10px; }
+  body.edit .editbtn { display:inline-block; }
+  .editpanel { display:none; background:#0f1218; border:1px solid var(--feature); border-radius:8px; padding:12px; margin-bottom:12px; }
+  .editpanel.on { display:block; }
+  .erow { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start; margin-bottom:8px; }
+  .erow label { font-size:11px; color:var(--mut); display:flex; flex-direction:column; gap:2px; }
+  .editpanel input, .editpanel select, .editpanel textarea { background:var(--card2); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:5px 7px; font-size:13px; font-family:inherit; }
+  .editpanel textarea { width:100%; min-height:54px; }
+  .editpanel input.n { width:54px; }
+  .eact { display:flex; gap:8px; align-items:center; margin-top:4px; }
+  .btn { border:none; border-radius:6px; padding:6px 14px; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn.save { background:var(--feature); color:#06121f; }
+  .btn.cancel { background:var(--card2); color:var(--fg); border:1px solid var(--line); }
+  .savemsg { font-size:12px; color:var(--hi); } .savemsg.err { color:var(--lo); }
 </style>
 </head>
 <body>
@@ -512,6 +534,31 @@ const pName = Object.fromEntries(personas.map(p=>[p.id,p.name]));
 const ideaById = Object.fromEntries(ideas.map(i=>[i.id,i]));
 const STL = {todo:'할 일', doing:'진행', done:'완료'};
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escA(s){ return esc(s).replace(/"/g,'&quot;'); }
+const EDIT = ['localhost','127.0.0.1'].includes(location.hostname);  // 편집은 로컬 serve.py에서만
+async function saveStory(id, body){
+  const res = await fetch('/api/story', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id, ...body})});
+  if(!res.ok) throw new Error(await res.text());
+  const j = await res.json();
+  const k = stories.findIndex(x=>x.id===id); if(k>=0) stories[k]=j.story;
+  return j.story;
+}
+function editPanel(s){
+  const pi=s.impact||{};
+  const psel=['P1','P2'].map(p=>`<option value="${p}" ${s.persona===p?'selected':''}>${p} ${pName[p]||''}</option>`).join('');
+  return `<div class="editpanel" data-id="${s.id}">
+    <div class="erow"><label style="flex:1">유저스토리 문장<textarea data-f="sentence">${esc(s.sentence||'')}</textarea></label></div>
+    <div class="erow">
+      <label>페르소나<select data-f="persona">${psel}</select></label>
+      <label>테마<input data-f="theme" value="${escA(s.theme||'')}"></label>
+      <label>P1<input class="n" data-f="P1" type="number" min="0" max="10" value="${pi.P1??''}"></label>
+      <label>P2<input class="n" data-f="P2" type="number" min="0" max="10" value="${pi.P2??''}"></label>
+      <label>Conf<input class="n" data-f="confidence" type="number" min="0" max="10" value="${s.confidence??''}"></label>
+    </div>
+    <div class="erow"><label style="flex:1">비고<textarea data-f="notes">${esc(s.notes||'')}</textarea></label></div>
+    <div class="eact"><button class="btn save" data-id="${s.id}">저장</button><button class="btn cancel">취소</button><span class="savemsg"></span></div>
+  </div>`;
+}
 function maxImpact(st){ return st.impact ? Math.max(...Object.values(st.impact)) : 0; }
 function value(st){ return maxImpact(st) * (st.confidence||0); }
 function bar(label,val){ val=val||0; const c=val>=7?'hi':val>=4?'mid':'lo';
@@ -540,8 +587,32 @@ function render(){
     return ((b.impact&&b.impact[sort])||0)-((a.impact&&a.impact[sort])||0);
   });
   document.getElementById('count').textContent = `${rows.length} / ${stories.length}`;
-  document.getElementById('list').innerHTML = rows.map(card).join('');
+  const CATS = DATA.meta.storyCategories || {};
+  const groups = Object.keys(CATS).map(cid=>({label:CATS[cid], items:rows.filter(r=>r.cat===cid)})).filter(g=>g.items.length);
+  const rest = rows.filter(r=>!CATS[r.cat]); if(rest.length) groups.push({label:'기타', items:rest});
+  document.getElementById('list').innerHTML = groups.map(g=>
+    `<section class="cat open"><div class="cathead"><span class="arrow">▸</span> ${g.label} <span class="catcount">${g.items.length}</span></div>`+
+    `<div class="catbody">${g.items.map(card).join('')}</div></section>`).join('');
+  document.querySelectorAll('.cathead').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
   document.querySelectorAll('.head').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+  document.querySelectorAll('.editbtn').forEach(b=>b.addEventListener('click',()=>b.parentElement.querySelector('.editpanel').classList.toggle('on')));
+  document.querySelectorAll('.editpanel').forEach(panel=>{
+    const id=panel.dataset.id, base=stories.find(x=>x.id===id);
+    panel.querySelector('.cancel').addEventListener('click',()=>panel.classList.remove('on'));
+    panel.querySelector('.save').addEventListener('click', async ()=>{
+      const msg=panel.querySelector('.savemsg'); msg.className='savemsg'; msg.textContent='저장 중...';
+      try{
+        const patch={};
+        panel.querySelectorAll('[data-f]').forEach(el=>{
+          const f=el.dataset.f; let v=el.value;
+          if(['P1','P2','confidence'].includes(f)) v = (v===''?null:Number(v));
+          if(f==='P1'||f==='P2'){ patch.impact = patch.impact||{...(base.impact||{})}; patch.impact[f]=v; }
+          else patch[f]=v;
+        });
+        await saveStory(id,{patch}); render();
+      }catch(err){ msg.className='savemsg err'; msg.textContent='실패: '+err.message; }
+    });
+  });
 }
 function frow(fid){
   const i=ideaById[fid]; if(!i) return `<div class="frow"><span class="fid">${esc(fid)}</span><span class="ftt" style="color:var(--lo)">(없는 기능)</span></div>`;
@@ -563,6 +634,7 @@ function card(s){
     <span class="tag">${fids.length} 기능</span>
     <span class="val">가치 ${value(s)}</span>
   </div><div class="body">
+    <button class="editbtn" data-id="${s.id}">✏️ 편집</button>${editPanel(s)}
     <div class="story">🎯 ${story}</div>
     <div class="scores">${imp}${bar('Confidence', s.confidence)}<div class="valBig">가치 = max(Impact) × Confidence = <b>${value(s)}</b></div></div>
     ${s.notes?`<div class="flbl">비고</div><div style="font-size:12.5px;color:var(--mut);margin-bottom:12px">${esc(s.notes)}</div>`:''}
@@ -570,6 +642,7 @@ function card(s){
     ${fids.map(frow).join('')}
   </div></div>`;
 }
+document.body.classList.toggle('edit', EDIT);
 render();
 </script>
 </body>
