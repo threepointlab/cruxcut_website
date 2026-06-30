@@ -554,10 +554,10 @@ function card(s){
   const imp = s.impact ? Object.entries(s.impact).map(([k,v])=>bar(`Impact · ${k} ${pName[k]||''}`,v)).join('') : '';
   const fids = s.featureIds || [];
   const doneAll = fids.length && fids.every(f=>ideaById[f] && (ideaById[f].status==='done'));
-  const story = `As a <b>${esc(s.as)}</b>,<br>I want ${esc(s.want)},<br>so that <b>${esc(s.soThat)}</b>`;
+  const story = esc(s.sentence || s.want || '');
   return `<div class="card${doneAll?' done-all':''}"><div class="head">
     <span class="uid">${esc(s.id)}</span>
-    <span class="ttl">${esc(s.want)}</span>
+    <span class="ttl">${esc(s.sentence || s.want)}</span>
     <span class="pchip p-${s.persona}">${s.persona} ${pName[s.persona]||''}</span>
     ${s.theme?`<span class="tag">${esc(s.theme)}</span>`:''}
     <span class="tag">${fids.length} 기능</span>
