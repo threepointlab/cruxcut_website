@@ -232,7 +232,7 @@
         "new": "메타데이터 기반 실시간 크롭 뷰포트 렌더, export 시에만 crop() 머티리얼라이즈(지연 크롭)",
         "synergy": "크롭비율 자유형(IDEA-006), trim(IDEA-005)"
       },
-      "notes": "extract→crop→slice 파이프라인 구조 최적화. frozen crop() API와의 관계 검토 필요(현재 crop은 즉시 렌더). 코어 파이프라인을 건드리므로 ClimbPipeKit 카테고리로 옮길지 검토 가능.",
+      "notes": "extract→crop→slice 파이프라인 구조 최적화. crop은 이미 buildCropPlan(메타)/renderCropPlan(공유 시 렌더)으로 분리돼 즉시 렌더가 아님(IDEA-004 done). 코어 파이프라인을 건드리므로 ClimbPipeKit 카테고리로 옮길지 검토 가능.",
       "status": "done",
       "statusEvidence": "분석 시 crop_plan.json 사이드카만 저장하고 실제 크롭 렌더는 공유 시에만 실행 (Cliff CropPlanExportSession · ResultShareExportPresenter)."
     },

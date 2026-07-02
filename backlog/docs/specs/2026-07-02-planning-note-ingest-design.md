@@ -19,7 +19,7 @@
 
 ## 2. 제품 맥락 (Impact·Ease 판단 근거)
 
-대상 제품은 **climbwork / cliff_ios** (클라이밍 영상 분석, iOS 우선). 3함수 API(extractFramePose/crop/slice), 온디바이스 Vision 기반, C++ canonical. 페르소나 P1=공유러(SNS·콘텐츠), P2=성장러(기록·복기·습관). 비즈 우선순위: 리텐션 > 결제. 상세는 `PRODUCT_CONTEXT.md`.
+대상 제품은 **climbwork / cliff_ios** (클라이밍 영상 분석, iOS 우선). extract→crop→slice 3단계 API(단계별 함수는 SemVer로 가법 확장 — 예: buildCropPlan/renderCropPlan), 온디바이스 Vision 기반, C++ canonical. 페르소나 P1=공유러(SNS·콘텐츠), P2=성장러(기록·복기·습관). 비즈 우선순위: 리텐션 > 결제. 상세는 `PRODUCT_CONTEXT.md`.
 
 **ICE 규약**: 각 1~10. `iceScore(feature) = max(personaImpact) × confidence × ease`. 기획노트에 ICE가 있던 항목은 원 점수를 최대한 보존(max(P1,P2)=기획노트 Impact), 없던 항목은 추정. **모든 점수는 초안이며 사용자가 조정 가능**.
 

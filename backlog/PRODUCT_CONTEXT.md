@@ -20,17 +20,19 @@
 
 ---
 
-## 3. 제품이 하는 일 (3-Function API)
+## 3. 제품이 하는 일 (extract → crop → slice 3단계 API)
 
-현재 공개 API는 3개 함수로 **고정(frozen)**되어 있다:
+> ⚠️ 갱신(2026-07-02): 공개 API는 **extract → crop → slice 3단계**를 뼈대로 하되, 단계별로 여러 진입점이 **가법적으로 추가돼 왔다**(SemVer, 현재 릴리스 `1.0.1`). 예전 표현인 "정확히 3개 함수로 frozen"은 더 이상 맞지 않는다. 권위 있는 실제 API 목록·사용법은 climbpipe `ClimbPipeKit/README.md` 참조.
 
-| 함수 | 입력 → 출력 | 사용자 가치 |
+| 단계 | 공개 함수(현재) | 사용자 가치 |
 |---|---|---|
-| **`extractFramePose`** | 영상 → `[FramePose]` (sparse 골격) | 분석의 토대. 프레임별 클라이머 추적 + 자세 추정 |
-| **`crop`** | framePoses + 원본 → 크롭 영상 | **자동 추적 크롭 영상** 생성 (클라이머 따라가며 잘라줌) |
-| **`slice`** | framePoses → `[CutMetadata]` | **동작 단위 분할** + **하이라이트 구간** 메타데이터 |
+| **extract** | `extractFramePose` (+ `extractFast`·`extractQuality`·`extractLead`·`extractAllFrame`·`extractFixedStride`) → `[FramePose]` (sparse 골격) | 분석의 토대. 프레임별 클라이머 추적 + 자세 추정 |
+| **crop** | `buildCropPlan`(크롭 메타/plan) → `renderCropPlan`(공유·내보내기 시 실제 렌더) · `crop`·`cropWithTargetCenters`·`renderCropPreview` | **자동 추적 크롭 영상**. plan(메타)과 render 분리 → 공유 시에만 실제 렌더 |
+| **slice** | `slice(framePoses:)` · `slice(framePoses:source:) async` | **동작 단위 분할** + **하이라이트 구간** 메타데이터 |
 
 → 즉 사용자 관점 기능: **(a) 클라이머만 따라가는 크롭 영상 자동 생성**, **(b) 무브별 자동 분할**, **(c) 명장면 자동 하이라이트**.
+
+**불변(계약)으로 남는 것**: 3단계 구조 · sparse FramePose 의미(`frame_idx`+`t_ms`) · C++ POD canonical · 크로스랭귀지 골든 parity. 반면 각 단계의 **공개 함수는 필요에 따라 추가**될 수 있다(시그니처 '동결' 아님, 파괴적 변경만 major bump).
 
 ---
 
@@ -54,7 +56,7 @@
 | 모듈 | 역할 |
 |---|---|
 | `cpp/climbcore/` | **C++ canonical 알고리즘** (numerics, motion, selection, move-seg, highlight) — 진실의 원천 |
-| `ClimbPipeKit/` | Swift/iOS SwiftPM 라이브러리 — 3함수 파사드 + C++ 브리지 |
+| `ClimbPipeKit/` | Swift/iOS SwiftPM 라이브러리 — extract·crop·slice 파사드 + C++ 브리지 |
 | `ClimbPipeDemo/` | iOS 데모 앱 (검증/벤치마크 UI) |
 | `cliff_ios/` | 외부 소비 앱 (별도 범위, 통합 대기) |
 | `climbpipe/` | Python 참고 구현 (알고리즘 검증, golden fixture 생성, 시각화) |
@@ -75,7 +77,7 @@
 
 **단계: MVP 통합 완료 → 제품 정책 고정 + 출시 준비**
 
-- ✅ 3함수 API / 데이터 계약 frozen
+- ✅ extract→crop→slice 파이프라인 API + 데이터 계약 안정화 (SemVer, 현재 `1.0.1`; crop은 plan/render 분리로 확장됨)
 - ✅ C++ 코어 알고리즘 완성, Swift 브리지 검증, cross-language parity OK
 - ✅ iOS 데모 앱 동작, 성능 최적화(parallel crop) 완료
 - ⚠️ 실제 기기 벤치마크 숫자 대기 (시뮬레이터 smoke만 검증됨)
@@ -86,12 +88,12 @@
 
 ## 8. 변경 시 준수할 고정 계약 (기획 시 제약 조건)
 
-1. **3함수 API 시그니처 변경 금지**
+1. **extract→crop→slice 3단계 구조 유지** — 새 진입점(함수) 추가는 가능하나(SemVer 가법 확장), 기존 공개 함수의 **파괴적 시그니처 변경은 major bump** 사유. 3단계 흐름 자체는 뒤집지 않는다.
 2. **C++ POD가 canonical** — Swift는 얇은 미러만, 알고리즘 fork 금지
 3. **Sparse FramePose 의미 유지** (frame_idx + t_ms 키)
 4. **Golden parity 유지** (C++↔Swift↔Python 동일 결과)
 
-> 기획/백로그에서 새 기능을 구상할 때, 위 계약을 깨는 방향(예: API 시그니처를 바꿔야 하는 기능)은 비용이 크다는 점을 ICE의 Effort에 반영할 것.
+> 기획/백로그에서 새 기능을 구상할 때, 위 계약을 깨는 방향(예: 기존 공개 함수의 파괴적 변경이나 3단계 구조 자체를 뒤집는 기능)은 비용이 크다는 점을 ICE의 Effort에 반영할 것. 반대로 새 함수(변형)를 **추가**하는 방식은 상대적으로 저렴하다.
 
 ---
 

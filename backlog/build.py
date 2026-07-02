@@ -155,7 +155,7 @@ HTML = """<!DOCTYPE html>
 <header>
   <h1>tplab 백로그 <span class="sub" id="meta"></span></h1>
   <div class="sub" id="metanote"></div>
-  <div class="nav"><span class="cur">📋 기능</span> · <a href="./stories.html">🎯 유저스토리 →</a></div>
+  <div class="nav"><span class="cur">📋 기능</span> · <a href="./stories.html">🎯 유저스토리</a> · <a href="./prompts.html">🤖 구현 프롬프트 →</a></div>
 </header>
 <div class="summary" id="summary"></div>
 <div class="controls">
@@ -522,7 +522,7 @@ STORIES_HTML = """<!DOCTYPE html>
 <body>
 <header>
   <h1>tplab 유저스토리 <span class="sub" id="meta"></span></h1>
-  <div class="nav"><a href="./index.html">📋 기능</a> · <span class="cur">🎯 유저스토리</span></div>
+  <div class="nav"><a href="./index.html">📋 기능</a> · <span class="cur">🎯 유저스토리</span> · <a href="./prompts.html">🤖 구현 프롬프트 →</a></div>
 </header>
 <div class="summary" id="summary"></div>
 <div class="controls">
@@ -678,3 +678,143 @@ render();
 """
 (ROOT / "stories.html").write_text(STORIES_HTML.replace("__DATA__", embedded), encoding="utf-8")
 print(f"stories.html 생성: {len(data.get('stories', []))} stories")
+
+# ---------------------------------------------------------------------------
+# prompts.html — 기능별 구현 프롬프트 (data/prompts.json → 자기완결 HTML)
+# ---------------------------------------------------------------------------
+prompts_path = ROOT / "data" / "prompts.json"
+if prompts_path.exists():
+    pdata = json.loads(prompts_path.read_text(encoding="utf-8"))
+    pembedded = json.dumps(pdata, ensure_ascii=False)
+    PROMPTS_HTML = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CruxCut · 구현 프롬프트</title>
+<style>
+  :root { --bg:#0f1115; --card:#171a21; --card2:#1e222b; --line:#2a2f3a; --fg:#e8eaf0; --mut:#9aa3b2;
+          --feature:#4ea1ff; --engineering:#b48cff; --bugfix:#ff9f43; --hi:#33d39e; --warn:#ff9f43; --lo:#ff6b6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif; }
+  header { padding:18px 24px 10px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--bg); z-index:5; }
+  h1 { margin:0; font-size:19px; } h1 .meta { color:var(--mut); font-weight:400; font-size:13px; }
+  .nav { margin-top:7px; font-size:13px; }
+  .nav a { color:var(--feature); text-decoration:none; } .nav a:hover { text-decoration:underline; }
+  .nav .cur { font-weight:700; }
+  .summary { display:flex; flex-wrap:wrap; gap:8px; padding:12px 24px; border-bottom:1px solid var(--line); }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 11px; font-size:13px; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; padding:12px 24px; align-items:center; }
+  .controls select, .controls input { background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:13px; }
+  .controls input { flex:1; min-width:180px; }
+  .preamblebox { margin:12px 24px; background:var(--card); border:1px solid var(--line); border-left:3px solid var(--feature); border-radius:10px; padding:12px 14px; }
+  .preamblebox .ptitle { font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+  .preamblebox pre { margin:0; white-space:pre-wrap; word-break:break-word; font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--mut); max-height:180px; overflow:auto; }
+  .preamblebox.open pre { max-height:none; }
+  .hint { padding:2px 24px 12px; color:var(--mut); font-size:12.5px; }
+  #list { padding:0 24px 60px; }
+  section.tier { margin:14px 0; }
+  .tierhead { font-size:15px; font-weight:700; padding:8px 0; border-bottom:1px solid var(--line); cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .tierhead .cnt { color:var(--mut); font-weight:400; font-size:13px; }
+  .tierbody { display:none; padding-top:10px; }
+  section.tier.open .tierbody { display:block; }
+  section.tier.open .arrow { transform:rotate(90deg); }
+  .arrow { transition:transform .15s; display:inline-block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden; }
+  .chead { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:11px 13px; }
+  .ttl { font-weight:600; flex:1; min-width:200px; }
+  .ideas { color:var(--mut); font-size:12px; font-family:ui-monospace,monospace; }
+  .repo { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:#242a36; color:var(--mut); }
+  .repo.cliff { color:#a9cdf2; } .repo.pipe { color:#c9b6ff; } .repo.mix { color:#ffd9a8; }
+  .stt { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; }
+  .stt.s-todo { background:#242a36; color:var(--mut); } .stt.s-doing { background:rgba(78,161,255,.18); color:var(--feature); } .stt.s-done { background:rgba(51,211,158,.18); color:var(--hi); }
+  .copy { margin-left:auto; background:var(--feature); color:#06122a; border:none; border-radius:8px; padding:6px 11px; font-size:12.5px; font-weight:700; cursor:pointer; }
+  .copy.ok { background:var(--hi); }
+  .cbody { border-top:1px solid var(--line); padding:0; }
+  .cbody pre { margin:0; white-space:pre-wrap; word-break:break-word; font:12.5px/1.62 ui-monospace,SFMono-Regular,Menlo,monospace; color:#d5dae4; padding:12px 14px; }
+  .empty { color:var(--mut); padding:30px 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤖 구현 프롬프트 <span class="meta" id="meta"></span></h1>
+  <div class="nav"><a href="./index.html">📋 기능</a> · <a href="./stories.html">🎯 유저스토리</a> · <span class="cur">🤖 구현 프롬프트</span></div>
+</header>
+<div class="summary" id="summary"></div>
+<div class="preamblebox" id="preamblebox">
+  <div class="ptitle">🧩 공통 규칙 (모든 프롬프트 앞에 자동 포함됨) <button class="copy" id="copyPre">📋 공통 규칙 복사</button> <button class="copy" id="togglePre" style="background:#242a36;color:var(--fg)">펼치기</button></div>
+  <pre id="preamble"></pre>
+</div>
+<div class="controls">
+  <select id="f-tier"></select>
+  <select id="f-repo"></select>
+  <select id="f-status"><option value="">상태 전체</option><option value="todo">할 일</option><option value="doing">진행</option><option value="done">완료</option></select>
+  <input id="q" placeholder="검색 (제목·IDEA·내용)">
+</div>
+<div class="hint" id="hint">각 카드의 <b>📋 복사</b>는 <b>공통 규칙 + 해당 프롬프트</b>를 함께 복사한다 → Claude 세션에 그대로 붙여넣어 실행.</div>
+<div id="list"></div>
+<script id="prompts-data" type="application/json">__PDATA__</script>
+<script>
+const PD = JSON.parse(document.getElementById('prompts-data').textContent);
+const items = PD.items || [], tiers = PD.tiers || [], preamble = (PD.meta&&PD.meta.preamble)||'';
+const STL = {todo:'할 일', doing:'진행', done:'완료'};
+const tierLabel = Object.fromEntries(tiers.map(t=>[t.id,t.label]));
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function repoClass(r){ if(!r) return ''; if(r.includes('climbpipe')&&r.includes('cliff')) return 'mix'; if(r.includes('cliff')) return 'cliff'; if(r.includes('climbpipe')||r==='pipe') return 'pipe'; if(r.includes('+')) return 'mix'; return ''; }
+document.getElementById('preamble').textContent = preamble;
+document.getElementById('meta').textContent = `· ${items.length} 프롬프트 · ${PD.meta.generated||''}`;
+document.getElementById('copyPre').addEventListener('click',e=>copyText(preamble, e.target));
+document.getElementById('togglePre').addEventListener('click',e=>{ const b=document.getElementById('preamblebox'); b.classList.toggle('open'); e.target.textContent=b.classList.contains('open')?'접기':'펼치기'; });
+function copyText(txt, btn){ navigator.clipboard.writeText(txt).then(()=>{ const o=btn.textContent; btn.textContent='✓ 복사됨'; btn.classList.add('ok'); setTimeout(()=>{ btn.textContent=o; btn.classList.remove('ok'); },1400); }); }
+
+// summary + filters
+const byTier={}, byRepo={}; items.forEach(i=>{ byTier[i.tier]=(byTier[i.tier]||0)+1; byRepo[i.repo]=(byRepo[i.repo]||0)+1; });
+const stC={todo:0,doing:0,done:0}; items.forEach(i=>stC[i.status]=(stC[i.status]||0)+1);
+document.getElementById('summary').innerHTML =
+  `<div class="stat"><b>${items.length}</b> 프롬프트</div>` +
+  `<div class="stat" style="color:var(--hi)"><b>${stC.done||0}</b> 완료</div>` +
+  `<div class="stat" style="color:var(--feature)"><b>${stC.doing||0}</b> 진행</div>` +
+  `<div class="stat" style="color:var(--mut)"><b>${stC.todo||0}</b> 할 일</div>` +
+  tiers.map(t=>`<div class="stat">${esc(t.label)} <b>${byTier[t.id]||0}</b></div>`).join('');
+document.getElementById('f-tier').innerHTML = '<option value="">단계 전체</option>' + tiers.map(t=>`<option value="${t.id}">${esc(t.label)}</option>`).join('');
+document.getElementById('f-repo').innerHTML = '<option value="">레포 전체</option>' + Object.keys(byRepo).sort().map(r=>`<option value="${esc(r)}">${esc(r)} (${byRepo[r]})</option>`).join('');
+['f-tier','f-repo','f-status'].forEach(id=>document.getElementById(id).addEventListener('change',render));
+document.getElementById('q').addEventListener('input',render);
+
+function card(i){
+  const ideas = (i.ideaIds||[]).join(' ');
+  const rc = repoClass(i.repo);
+  return `<div class="card"><div class="chead">
+    <span class="ttl">${esc(i.title)}</span>
+    <span class="ideas">${esc(ideas)}</span>
+    <span class="repo ${rc}">${esc(i.repo)}</span>
+    <span class="stt s-${i.status}">${STL[i.status]||i.status}</span>
+    <button class="copy">📋 복사</button>
+  </div><div class="cbody"><pre>${esc(i.prompt)}</pre></div></div>`;
+}
+function render(){
+  const ft=document.getElementById('f-tier').value, fr=document.getElementById('f-repo').value, fs=document.getElementById('f-status').value;
+  const q=document.getElementById('q').value.trim().toLowerCase();
+  const rows = items.filter(i=>(!ft||i.tier===ft)&&(!fr||i.repo===fr)&&(!fs||i.status===fs)
+    &&(!q || JSON.stringify(i).toLowerCase().includes(q)));
+  const groups = tiers.map(t=>({t, items:rows.filter(r=>r.tier===t.id)})).filter(g=>g.items.length);
+  const list=document.getElementById('list');
+  if(!rows.length){ list.innerHTML='<div class="empty">조건에 맞는 프롬프트가 없습니다.</div>'; return; }
+  list.innerHTML = groups.map(g=>
+    `<section class="tier open"><div class="tierhead"><span class="arrow">▸</span> ${esc(g.t.label)} <span class="cnt">${g.items.length}</span></div>`+
+    `<div class="tierbody">${g.items.map(card).join('')}</div></section>`).join('');
+  list.querySelectorAll('.tierhead').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('open')));
+  // wire copy buttons (preamble + prompt)
+  const flat=groups.flatMap(g=>g.items);
+  list.querySelectorAll('.card').forEach((el,idx)=>{
+    const it=flat[idx];
+    el.querySelector('.copy').addEventListener('click',e=>copyText(preamble + '\\n\\n---\\n\\n' + it.prompt, e.target));
+  });
+}
+render();
+</script>
+</body>
+</html>
+"""
+    (ROOT / "prompts.html").write_text(PROMPTS_HTML.replace("__PDATA__", pembedded), encoding="utf-8")
+    print(f"prompts.html 생성: {len(pdata.get('items', []))} prompts")
