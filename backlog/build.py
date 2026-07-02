@@ -75,6 +75,11 @@ HTML = """<!DOCTYPE html>
   .review { background:rgba(255,159,67,.12); border:1px solid #5a4322; color:#ffcf99; border-radius:8px; padding:9px 12px; margin-bottom:12px; font-size:13px; }
   .deferbox { background:rgba(120,140,170,.12); border:1px solid #3a4456; border-left:3px solid #8aa0c0; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:13px; line-height:1.6; }
   .deferbox b { color:#b9c6dc; }
+  .statusbox { border-radius:8px; padding:9px 12px; margin-bottom:12px; font-size:13px; line-height:1.6; }
+  .statusbox.s-done { background:rgba(51,211,158,.10); border:1px solid #23543f; border-left:3px solid var(--hi); color:#a9e6cf; }
+  .statusbox.s-done b { color:var(--hi); }
+  .statusbox.s-doing { background:rgba(78,161,255,.10); border:1px solid #24405e; border-left:3px solid var(--feature); color:#a9cdf2; }
+  .statusbox.s-doing b { color:var(--feature); }
   .defertag { font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:rgba(138,160,192,.18); color:#aebcd4; white-space:nowrap; }
   .story { background:#12161d; border-left:3px solid var(--feature); border-radius:6px; padding:10px 12px; margin-bottom:12px; font-size:13.5px; line-height:1.7; }
   .children { display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
@@ -198,10 +203,17 @@ function bang(n){ return n>0 ? '!'.repeat(n) : ''; }
 const types = {feature:0, engineering:0, bugfix:0};
 ideas.forEach(i=>types[i.type]++);
 const nReview = ideas.filter(i=>i.review).length;
+const stCount = {done:0, doing:0, todo:0};
+ideas.forEach(i=>stCount[i.status||'todo']++);
 document.getElementById('meta').textContent = `· ${DATA.meta.product} · ${DATA.meta.generated}`;
 document.getElementById('metanote').textContent = DATA.meta.note || '';
+if(DATA.meta.statusAudit){ const a=DATA.meta.statusAudit;
+  document.getElementById('metanote').innerHTML += ` <span style="color:var(--hi)">· 진행상황 ${a.date} ${esc(a.source)}</span>`; }
 document.getElementById('summary').innerHTML =
   `<div class="stat"><b>${ideas.length}</b> 총 아이디어</div>` +
+  `<div class="stat" style="color:var(--hi)"><b>${stCount.done}</b> ✅ 완료</div>` +
+  `<div class="stat" style="color:var(--feature)"><b>${stCount.doing}</b> 🔩 진행</div>` +
+  `<div class="stat" style="color:var(--mut)"><b>${stCount.todo}</b> 할 일</div>` +
   `<div class="stat" style="color:var(--feature)"><b>${types.feature}</b> feature</div>` +
   `<div class="stat" style="color:var(--engineering)"><b>${types.engineering}</b> engineering</div>` +
   `<div class="stat" style="color:var(--bugfix)"><b>${types.bugfix}</b> bugfix</div>` +
@@ -359,6 +371,8 @@ function bar(label,val){
 function cell(label,val){ return val? `<div class="cell"><div class="lbl">${label}</div><div class="val">${val}</div></div>`:''; }
 function reviewBox(i){ return i.review? `<div class="review"><b>⚠️ 확인 필요</b> — ${esc(i.review)}</div>`:''; }
 function deferBox(i){ return i.deferred? `<div class="deferbox"><b>⏸ 보류 사유</b> — ${esc(i.deferred)}</div>`:''; }
+function statusBox(i){ const st=i.status||'todo'; if(st==='todo'||!i.statusEvidence) return '';
+  return `<div class="statusbox s-${st}"><b>${st==='done'?'✅ 완료':'🔩 진행 중'}</b> — ${esc(i.statusEvidence)}</div>`; }
 function implBlock(i){
   if(!i.implementation) return ''; const m=i.implementation;
   return `<div class="impl"><div><span>재사용</span>${esc(m.reuse)}</div><div><span>신규</span>${esc(m.new)}</div><div><span>시너지</span>${esc(m.synergy)}</div></div>`;
@@ -395,12 +409,12 @@ function featBody(i){
   } else {
     top = storyBox(i.userStory) + probAlt(i);
   }
-  return reviewBox(i) + deferBox(i) + top
+  return reviewBox(i) + deferBox(i) + statusBox(i) + top
     + `<div class="scores">${imp}${bar('Confidence', i.confidence)}${bar('Ease', i.ease)}<div class="iceBig">종합 ICE = max(Impact)×C×E = <b>${i.iceScore}</b></div></div>`
     + evidenceBlock(i) + implBlock(i) + metaLine(i);
 }
 function engBody(i){
-  return reviewBox(i) + deferBox(i)
+  return reviewBox(i) + deferBox(i) + statusBox(i)
     + `<div class="grid2">${cell('왜 필요한가 (rationale)', esc(i.rationale))}${cell('받쳐주는 가치 (enables)', esc(i.enables))}</div>`
     + `<div class="scores">${bar('Ease', i.ease)}</div>`
     + evidenceBlock(i) + implBlock(i) + metaLine(i);
@@ -523,7 +537,7 @@ STORIES_HTML = """<!DOCTYPE html>
   <label>검색<input type="search" id="q" placeholder="스토리·기능..."></label>
   <span class="count" id="count"></span>
 </div>
-<div class="hint">스토리 = 가치(Impact 페르소나별 × Confidence). 각 스토리 아래 그걸 달성하는 기능들(Ease·상태). 기능 상세/편집은 📋 기능 페이지.</div>
+<div class="hint" id="storyhint">스토리 = 가치(Impact 페르소나별 × Confidence). 각 스토리 아래 그걸 달성하는 기능들(Ease·상태). 진행상황은 달성 기능 status에서 파생(모두 완료=✅ 달성 / 일부 완료·진행=🔩 진행 중). 기능 상세/편집은 📋 기능 페이지.</div>
 <main id="list"></main>
 
 <script type="application/json" id="backlog-data">__DATA__</script>
@@ -566,11 +580,22 @@ function bar(label,val){ val=val||0; const c=val>=7?'hi':val>=4?'mid':'lo';
 
 document.getElementById('meta').textContent = `· ${stories.length} stories · ${ideas.length} features`;
 const byp = {P1:0,P2:0}; stories.forEach(s=>byp[s.persona]=(byp[s.persona]||0)+1);
+function stStatus(s){ const f=(s.featureIds||[]).map(x=>ideaById[x]).filter(Boolean); if(!f.length) return 'todo';
+  if(f.every(x=>(x.status||'todo')==='done')) return 'done';
+  if(f.some(x=>['done','doing'].includes(x.status||'todo'))) return 'doing';
+  return 'todo'; }
+const stC={done:0,doing:0,todo:0}; stories.forEach(s=>stC[stStatus(s)]++);
+const featC={done:0,doing:0,todo:0}; ideas.forEach(i=>featC[i.status||'todo']++);
+if(DATA.meta.statusAudit){ const a=DATA.meta.statusAudit;
+  document.getElementById('storyhint').innerHTML += ` <span style="color:var(--hi)">· 진행상황 ${a.date} ${a.source}</span>`; }
 document.getElementById('summary').innerHTML =
   `<div class="stat"><b>${stories.length}</b> 유저스토리</div>` +
+  `<div class="stat" style="color:var(--hi)"><b>${stC.done}</b> ✅ 달성</div>` +
+  `<div class="stat" style="color:var(--feature)"><b>${stC.doing}</b> 🔩 진행 중</div>` +
+  `<div class="stat" style="color:var(--mut)"><b>${stC.todo}</b> 대기</div>` +
+  `<div class="stat"><b>${ideas.length}</b> 매핑 기능 <span style="color:var(--hi)">✅${featC.done}</span> <span style="color:var(--feature)">🔩${featC.doing}</span> <span style="color:var(--mut)">·${featC.todo}</span></div>` +
   `<div class="stat" style="color:var(--p1)"><b>${byp.P1||0}</b> P1 공유러</div>` +
-  `<div class="stat" style="color:var(--p2)"><b>${byp.P2||0}</b> P2 성장러</div>` +
-  `<div class="stat"><b>${ideas.length}</b> 매핑 기능</div>`;
+  `<div class="stat" style="color:var(--p2)"><b>${byp.P2||0}</b> P2 성장러</div>`;
 const themes = [...new Set(stories.map(s=>s.theme).filter(Boolean))].sort();
 document.getElementById('f-theme').innerHTML = '<option value="">전체</option>' + themes.map(t=>`<option>${t}</option>`).join('');
 ['f-persona','f-theme','sort'].forEach(id=>document.getElementById(id).addEventListener('change',render));
@@ -624,10 +649,13 @@ function frow(fid){
 function card(s){
   const imp = s.impact ? Object.entries(s.impact).map(([k,v])=>bar(`Impact · ${k} ${pName[k]||''}`,v)).join('') : '';
   const fids = s.featureIds || [];
-  const doneAll = fids.length && fids.every(f=>ideaById[f] && (ideaById[f].status==='done'));
+  const sst = stStatus(s);
+  const doneAll = sst==='done';
+  const sChip = `<span class="stt s-${sst}">${sst==='done'?'✅ 달성':sst==='doing'?'🔩 진행 중':'대기'}</span>`;
   const story = esc(s.sentence || s.want || '');
   return `<div class="card${doneAll?' done-all':''}"><div class="head">
     <span class="uid">${esc(s.id)}</span>
+    ${sChip}
     <span class="ttl">${esc(s.sentence || s.want)}</span>
     <span class="pchip p-${s.persona}">${s.persona} ${pName[s.persona]||''}</span>
     ${s.theme?`<span class="tag">${esc(s.theme)}</span>`:''}

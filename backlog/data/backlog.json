@@ -23,6 +23,11 @@
       "grow": "🎯 성장 & 추천",
       "social": "🤝 소셜 & 지원",
       "biz": "💰 비즈니스·기반"
+    },
+    "statusAudit": {
+      "date": "2026-07-02",
+      "source": "code audit — climbpipe · cliff_ios 레포 실제 소스/문서 대조",
+      "note": "각 기능 status(할 일/진행/완료)는 실제 구현 코드를 근거로 판정. done/doing 기능엔 statusEvidence(근거·파일)를 남김. 유저스토리 진행상황은 이 기능 status에서 파생됨."
     }
   },
   "personas": [
@@ -65,7 +70,8 @@
             "soThat": "번거로운 수동 컷편집 없이 등반 부분만 바로 얻는다"
           },
           "problem": "문제를 풀 때까지 삼각대를 고정해 계속 녹화하면, 나중에 실제 등반한 부분만 잘라내는 컷편집이 번거로움",
-          "alternatives": "긴 영상을 수동으로 트림/컷편집"
+          "alternatives": "긴 영상을 수동으로 트림/컷편집",
+          "status": "todo"
         },
         {
           "title": "② 시도별 운동/휴식 시간 트래킹",
@@ -75,7 +81,8 @@
             "soThat": "트라이/휴식 패턴을 운동 데이터로 복기한다"
           },
           "problem": "세션의 시도·휴식 시간을 수동으로 남기기 번거로워 운동 데이터가 안 쌓임",
-          "alternatives": "스톱워치로 수동 측정"
+          "alternatives": "스톱워치로 수동 측정",
+          "status": "todo"
         },
         {
           "title": "③ 등반자 특정 (여러 명일 때)",
@@ -86,15 +93,18 @@
           },
           "problem": "화면에 클라이머가 여러 명일 때(들찍 실패의 가장 흔한 케이스) 엉뚱한 사람을 추적",
           "alternatives": "혼자 있을 때만 촬영",
-          "note": "여러 명 중 내 스타트홀드를 지정해 특정 (구 IDEA-008 멀티클라이머 선택을 흡수)."
+          "note": "여러 명 중 내 스타트홀드를 지정해 특정 (구 IDEA-008 멀티클라이머 선택을 흡수).",
+          "status": "todo"
         },
         {
           "title": "④ 포즈 감지 백업 (리드에서 멀어 안 보일 때)",
-          "note": "리드에서 클라이머가 멀리 올라가 작아지면 포즈 모델이 감지를 놓치는데, 지정한 스타트→탑 홀드 경로가 있으면 그 위치로 추적을 백업할 수 있음(감지 실패 구간 보완)."
+          "note": "리드에서 클라이머가 멀리 올라가 작아지면 포즈 모델이 감지를 놓치는데, 지정한 스타트→탑 홀드 경로가 있으면 그 위치로 추적을 백업할 수 있음(감지 실패 구간 보완).",
+          "status": "doing"
         },
         {
           "title": "⑤ 긴 리드 영상 성능 최적화 (stride 확대)",
-          "note": "스타트→탑 경로가 미리 있으면 추적이 경로를 따라가면 되므로, 길이가 긴 리드 영상에서 프레임 stride를 더 크게 키워 처리 속도를 높일 수 있음(트래킹 stride 활용)."
+          "note": "스타트→탑 경로가 미리 있으면 추적이 경로를 따라가면 되므로, 길이가 긴 리드 영상에서 프레임 stride를 더 크게 키워 처리 속도를 높일 수 있음(트래킹 stride 활용).",
+          "status": "done"
         }
       ],
       "personaImpact": {
@@ -109,7 +119,9 @@
         "new": "스타트/탑홀드 선택 UI, 선택 기반 출발·완등 판정, 자동 구간 분리, 시도별 타이머·휴식 분석",
         "synergy": "등반자 특정 use case 포함(구 IDEA-008 흡수), 수동 컷 편집(IDEA-007), 운동기록(IDEA-003)"
       },
-      "notes": "스타트/탑홀드 선택은 출발·완등 인식의 구현 방식이자 여러 use case의 기반(등반자 특정(구 IDEA-008 흡수)·포즈 백업·성능). 메모 !!!! 최상위. Ease 7은 핵심(홀드 선택+판정) 기준; ③④는 경로가 있으면 대체로 따라오는 이득."
+      "notes": "스타트/탑홀드 선택은 출발·완등 인식의 구현 방식이자 여러 use case의 기반(등반자 특정(구 IDEA-008 흡수)·포즈 백업·성능). 메모 !!!! 최상위. Ease 7은 핵심(홀드 선택+판정) 기준; ③④는 경로가 있으면 대체로 따라오는 이득.",
+      "status": "doing",
+      "statusEvidence": "⑤ 긴 리드 stride 최적화는 shipped(ClimbPipe.extractLead), ④ 포즈 감지 백업은 부분 구현(bbox 보간·WarmupBackfill). ①②③(등반 구간 자동 컷편집·트라이/휴식 트래킹·스타트홀드 등반자 특정)은 미착수."
     },
     {
       "id": "IDEA-002",
@@ -147,7 +159,8 @@
         "new": "프레임 단위 seeker UI",
         "synergy": "수동 컷 분할/병합(IDEA-007), 구간 보정(IDEA-046)"
       },
-      "notes": "수동 컷 분할의 전제 도구이나 기능적으로 별개."
+      "notes": "수동 컷 분할의 전제 도구이나 기능적으로 별개.",
+      "status": "todo"
     },
     {
       "id": "IDEA-003",
@@ -183,7 +196,8 @@
         "reuse": "기록 탭, 자동인식(IDEA-002)",
         "new": "기록 데이터모델, 시도횟수 카운트 UI",
         "synergy": "맞춤추천(IDEA-022)·streaks(IDEA-020)·위젯(IDEA-023)의 데이터원"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-004",
@@ -218,7 +232,9 @@
         "new": "메타데이터 기반 실시간 크롭 뷰포트 렌더, export 시에만 crop() 머티리얼라이즈(지연 크롭)",
         "synergy": "크롭비율 자유형(IDEA-006), trim(IDEA-005)"
       },
-      "notes": "extract→crop→slice 파이프라인 구조 최적화. frozen crop() API와의 관계 검토 필요(현재 crop은 즉시 렌더). 코어 파이프라인을 건드리므로 ClimbPipeKit 카테고리로 옮길지 검토 가능."
+      "notes": "extract→crop→slice 파이프라인 구조 최적화. frozen crop() API와의 관계 검토 필요(현재 crop은 즉시 렌더). 코어 파이프라인을 건드리므로 ClimbPipeKit 카테고리로 옮길지 검토 가능.",
+      "status": "done",
+      "statusEvidence": "분석 시 crop_plan.json 사이드카만 저장하고 실제 크롭 렌더는 공유 시에만 실행 (Cliff CropPlanExportSession · ResultShareExportPresenter)."
     },
     {
       "id": "IDEA-005",
@@ -326,7 +342,8 @@
         "new": "분할/병합 편집 모델·UI",
         "synergy": "컷별 배속편집(IDEA-011)"
       },
-      "notes": "메모 !!! '컷 분할/병합'. '복제'는 범위 제외. 구간 보정은 IDEA-046로 분리."
+      "notes": "메모 !!! '컷 분할/병합'. '복제'는 범위 제외. 구간 보정은 IDEA-046로 분리.",
+      "status": "todo"
     },
     {
       "id": "IDEA-009",
@@ -360,7 +377,9 @@
         "reuse": "재생 컨트롤",
         "new": "길게 누르기 → 연속 속도 슬라이더",
         "synergy": "복기 UX"
-      }
+      },
+      "status": "doing",
+      "statusEvidence": "AnalysisOptionsBar에 롱프레스 배속 메뉴는 있으나 이산값 [0.25~2.0]·상한 2.0x — 연속 조절/3.0x는 미지원."
     },
     {
       "id": "IDEA-010",
@@ -382,7 +401,8 @@
         "reuse": "재생 반복 로직",
         "new": "옵션 2개로 축소",
         "synergy": "-"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-011",
@@ -416,7 +436,8 @@
         "reuse": "컷 메타데이터(slice)",
         "new": "컷별 배속 파라미터 + export 적용",
         "synergy": "수동 컷 편집(IDEA-007), wrapped 영상(IDEA-019)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-012",
@@ -451,7 +472,8 @@
         "new": "입력 문구를 가이드 질문으로 변경",
         "synergy": "메모 태그(IDEA-018)·모아보기(IDEA-016)"
       },
-      "notes": "사실상 '메모 하기' 문구 변경 수준의 소형 작업(빠른 윈)."
+      "notes": "사실상 '메모 하기' 문구 변경 수준의 소형 작업(빠른 윈).",
+      "status": "todo"
     },
     {
       "id": "IDEA-013",
@@ -517,7 +539,8 @@
         "new": "앵글/기울이기·주밍/패닝·슬로우모션 효과, (실험)패럴랙스 레이어",
         "synergy": "출발/완등 인식(IDEA-001)"
       },
-      "notes": "구 IDEA-013(위치 기반 앵글)+IDEA-047(이벤트 줌) 통합. 효과별 children. Ease는 쉬운 효과(각도 8·슬로우모션 7) 기준; 주밍/패닝 4·패럴랙스는 더 낮음(child 참조)."
+      "notes": "구 IDEA-013(위치 기반 앵글)+IDEA-047(이벤트 줌) 통합. 효과별 children. Ease는 쉬운 효과(각도 8·슬로우모션 7) 기준; 주밍/패닝 4·패럴랙스는 더 낮음(child 참조).",
+      "status": "todo"
     },
     {
       "id": "IDEA-014",
@@ -578,7 +601,8 @@
         "new": "경로 아트 렌더, 통계 오버레이",
         "synergy": "루트 도감(IDEA-015), 운동기록(IDEA-003)"
       },
-      "notes": "도감 느낌은 IDEA-015와 연결. Confidence 7→8: 경로 공유 수요 근거 문서화 반영."
+      "notes": "도감 느낌은 IDEA-015와 연결. Confidence 7→8: 경로 공유 수요 근거 문서화 반영.",
+      "status": "todo"
     },
     {
       "id": "IDEA-015",
@@ -613,7 +637,8 @@
         "new": "토포(벽/루트) 매핑, 도감 수집 UI",
         "synergy": "스트라바 경로 그림(IDEA-014)"
       },
-      "notes": "실내보다 토포 있는 자연바위에 적합. 스트라바 그림과 비슷하나 '도감 수집' 관점."
+      "notes": "실내보다 토포 있는 자연바위에 적합. 스트라바 그림과 비슷하나 '도감 수집' 관점.",
+      "status": "todo"
     },
     {
       "id": "IDEA-016",
@@ -647,7 +672,8 @@
         "reuse": "기록/메모 데이터",
         "new": "메모 필터 뷰",
         "synergy": "메모 태그(IDEA-018), 프롬프트(IDEA-012)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-017",
@@ -682,7 +708,8 @@
         "new": "서버·계정·공유 권한, 동기화",
         "synergy": "랭킹(IDEA-026)·챌린지(IDEA-025) 등 소셜군"
       },
-      "notes": "서버 도입 = 백엔드 신규. Ease 낮음."
+      "notes": "서버 도입 = 백엔드 신규. Ease 낮음.",
+      "status": "todo"
     },
     {
       "id": "IDEA-018",
@@ -717,7 +744,8 @@
         "reuse": "메모 기능",
         "new": "태그 데이터모델, 태그 필터/유사무브 모아보기",
         "synergy": "메모 모아보기(IDEA-016), 유사도 엔진(IDEA-070)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-019",
@@ -752,7 +780,8 @@
         "new": "월별 집계·자동 합본 템플릿",
         "synergy": "streaks(IDEA-020), 컷별 배속(IDEA-011)"
       },
-      "notes": "정기 리텐션 트리거(월간)."
+      "notes": "정기 리텐션 트리거(월간).",
+      "status": "todo"
     },
     {
       "id": "IDEA-020",
@@ -786,7 +815,8 @@
         "reuse": "기록 데이터(IDEA-003)",
         "new": "streak 계산·표시, 알림",
         "synergy": "위젯(IDEA-023)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-021",
@@ -822,7 +852,9 @@
         "new": "VSR(video super resolution) 모델, 온디바이스 성능 최적화",
         "synergy": "색필터(IDEA-049), export(IDEA-004)"
       },
-      "notes": "VSR로 해상도 향상. 온디바이스 모델·성능이 관건이라 Ease 낮음. (구 '화질·색필터'에서 분리)"
+      "notes": "VSR로 해상도 향상. 온디바이스 모델·성능이 관건이라 Ease 낮음. (구 '화질·색필터'에서 분리)",
+      "status": "doing",
+      "statusEvidence": "VSR 실험(VSRExperimentCrop·vsr_metrics.py) 완료했으나 in-app 뉴럴 VSR은 no-go 결론. 대신 1K/2K/4K 고해상도 크롭 출력만 제공."
     },
     {
       "id": "IDEA-022",
@@ -900,7 +932,8 @@
         "new": "추천 로직(문제·기술·약점), 기술 점진 난이도 트래킹",
         "synergy": "유사도 엔진(IDEA-070), 손가락 부하(IDEA-069), 다음 난이도 예측(IDEA-050), 신체(IDEA-051)"
       },
-      "notes": "구 IDEA-022(보드 문제 추천)를 '맞춤 훈련 추천' 상위로 통합 — 문제 추천(①②, 보드 한정) + 기술 점진(③) + 약점 보완(④). 약점 보완은 유사도 엔진(IDEA-070) 기반."
+      "notes": "구 IDEA-022(보드 문제 추천)를 '맞춤 훈련 추천' 상위로 통합 — 문제 추천(①②, 보드 한정) + 기술 점진(③) + 약점 보완(④). 약점 보완은 유사도 엔진(IDEA-070) 기반.",
+      "status": "todo"
     },
     {
       "id": "IDEA-023",
@@ -934,7 +967,8 @@
         "reuse": "기록 데이터(IDEA-003)",
         "new": "WidgetKit 위젯",
         "synergy": "streaks(IDEA-020)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-024",
@@ -969,7 +1003,8 @@
         "new": "하드웨어(미니 센서 기기), BLE 연동, 센서 융합(높이·동작 추정)",
         "synergy": "운동기록 트래킹(IDEA-003)"
       },
-      "notes": "아이디어 단계 — 구체 사양 미정. 하드웨어 신규로 비용·리스크 큼."
+      "notes": "아이디어 단계 — 구체 사양 미정. 하드웨어 신규로 비용·리스크 큼.",
+      "status": "todo"
     },
     {
       "id": "IDEA-025",
@@ -1003,7 +1038,8 @@
         "reuse": "pose 추정",
         "new": "턱걸이 카운트, 챌린지/리더보드",
         "synergy": "랭킹(IDEA-026)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-026",
@@ -1037,7 +1073,8 @@
         "reuse": "기록 데이터",
         "new": "서버·계정·랭킹 집계",
         "synergy": "친구 메모(IDEA-017), 챌린지(IDEA-025)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-027",
@@ -1060,8 +1097,9 @@
         "new": "말단 컷 길이 임계 병합 규칙",
         "synergy": "긴 영상 과대분할(IDEA-028)"
       },
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "statusEvidence": "MoveSegmentDurationNormalizer.appendTrailingMoveIfNeeded — 짧으면 직전 컷에 병합, 아니면 단독 컷 (ClimbPipe.swift)."
     },
     {
       "id": "IDEA-028",
@@ -1085,8 +1123,9 @@
         "new": "영상 길이 적응형 컷 길이 정책 재검토(긴 영상 -> CoG 속도가 작아질 때마다 끊어주기. 컷 관련 파라미터 확인 필요)",
         "synergy": "말단 처리(IDEA-027)"
       },
-      "status": "todo",
-      "notes": "긴 영상 -> CoG 속도가 작아질 때마다 끊어주기. 컷 관련 파라미터 확인 필요"
+      "status": "done",
+      "notes": "긴 영상 -> CoG 속도가 작아질 때마다 끊어주기. 컷 관련 파라미터 확인 필요",
+      "statusEvidence": "MoveSegmentDurationNormalizer.mergeShortSegments + 영상 길이 비례 minDuration(>60s→4.0s)로 긴 영상 과대분할 완화."
     },
     {
       "id": "IDEA-029",
@@ -1109,7 +1148,9 @@
         "new": "관절 관계 기반 손 이동 판정",
         "synergy": "CoG 활용(IDEA-030), 사지점 기준(IDEA-031)"
       },
-      "notes": "알고리즘 변경 → golden parity 재검증 필요."
+      "notes": "알고리즘 변경 → golden parity 재검증 필요.",
+      "status": "done",
+      "statusEvidence": "cpp MoveSeg.hpp mergeRunsByArmChain — 어깨→팔꿈치→손목 체인(≥3관절)으로 실제 손 이동 vs 같은 홀드 구분."
     },
     {
       "id": "IDEA-030",
@@ -1131,7 +1172,9 @@
         "reuse": "CoG, MoveSegmenter",
         "new": "CoG 속도 기반 병합 규칙",
         "synergy": "팔관절 감지(IDEA-029)"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "CogKinematicMoveSegmenter.mergeHighSpeedBoundaries — CoG 고속 경계 병합으로 다이노를 1무브로 유지."
     },
     {
       "id": "IDEA-031",
@@ -1178,8 +1221,9 @@
         "new": "키포인트별 전역 이상치 검출",
         "synergy": "tracking 스무딩"
       },
-      "status": "todo",
-      "notes": ""
+      "status": "done",
+      "notes": "",
+      "statusEvidence": "PoseTrackReconstructor.reconstructDense → removeOutliers + PathOptimizer.smoothCenters (전역 이상치 제거 + 경로 스무딩)."
     },
     {
       "id": "IDEA-033",
@@ -1201,7 +1245,9 @@
         "reuse": "detectHighlights(C++)",
         "new": "수식 문서화·가중치 재검토",
         "synergy": "confidence gating(IDEA-034)"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "cpp HlHighlight.hpp — 7개 명명 feature 가중 융합 H(HL_WEIGHTS), C++↔Swift↔Python golden parity."
     },
     {
       "id": "IDEA-034",
@@ -1223,7 +1269,9 @@
         "reuse": "highlight confidence gating",
         "new": "임계 이상 비감쇠 규칙",
         "synergy": "H 수식 검토(IDEA-033)"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "HlConfig.kpConfMin=0.30 키포인트 게이트 + frameAttenuation(신뢰 관절 비율 감쇠), 기본 ON."
     },
     {
       "id": "IDEA-036",
@@ -1245,7 +1293,9 @@
         "reuse": "감지/추적 위치, motion",
         "new": "ROI 추출 → 모델 입력 리사이즈 전략",
         "synergy": "처리 파라미터 튜닝(IDEA-037)"
-      }
+      },
+      "status": "doing",
+      "statusEvidence": "ROI 확대 시 검출 +75% 실험 확인했으나 PoseEstimator 입력 경로엔 미연결(품질 후속 과제)."
     },
     {
       "id": "IDEA-037",
@@ -1268,7 +1318,9 @@
         "reuse": "파이프라인 전반",
         "new": "처리 전략·동시성 정책 정리",
         "synergy": "ROI 입력(IDEA-036), Fast/Quality(IDEA-038)"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "ThroughputProfiler + 디바이스 적응 병렬 크롭(2.4~2.6x 가속) + adaptive PoseStridePolicy."
     },
     {
       "id": "IDEA-038",
@@ -1290,7 +1342,9 @@
         "reuse": "포즈 백엔드, stride",
         "new": "프리셋별 최적화",
         "synergy": "ROI 입력(IDEA-036)"
-      }
+      },
+      "status": "doing",
+      "statusEvidence": "extractFast(고정 stride2)/extractQuality(adaptive) 존재하나, adaptive Fast 정책 재튜닝 후 기본화 예정."
     },
     {
       "id": "IDEA-039",
@@ -1312,7 +1366,9 @@
         "reuse": "ClimbPipeKitBlazePose",
         "new": "갱신 주기 파라미터 조정",
         "synergy": "처리 파라미터 튜닝(IDEA-037)"
-      }
+      },
+      "status": "doing",
+      "statusEvidence": "BlazePose VIDEO 트래커 cadence 민감성 규명 완료, Apple Vision 기본 유지·BlazePose는 IMAGE 모드로 우회(파라미터 fix는 미배포)."
     },
     {
       "id": "IDEA-040",
@@ -1334,7 +1390,8 @@
         "reuse": "cliff_ios 권한 흐름",
         "new": "제한 상태 감지 + 안내 알림",
         "synergy": "-"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-042",
@@ -1356,7 +1413,8 @@
         "reuse": "카메라 녹화 화면",
         "new": "녹화 타이머 표시",
         "synergy": "-"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-043",
@@ -1378,7 +1436,8 @@
         "reuse": "로딩 UI",
         "new": "자간 조정",
         "synergy": "-"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-044",
@@ -1400,7 +1459,9 @@
         "reuse": "cropPreviewRender, 직전 crop 크기",
         "new": "진입 시 기존 크기+CoG 중심 적용",
         "synergy": "크롭/트래킹 설정 진입 UX"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "Cliff TrackingOptionsSheet가 initialCrop(기존 크롭 크기) + trackingPoints(CoG 경로)로 진입값 표시."
     },
     {
       "id": "IDEA-045",
@@ -1422,7 +1483,9 @@
         "reuse": "기록 탭 셀",
         "new": "메모 유무별 레이아웃",
         "synergy": "메모 기능군"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "Cliff AnalysisCutRow memoLine이 lineLimit(active?10:1) + 빈 메모 1줄 플레이스홀더로 표시."
     },
     {
       "id": "IDEA-046",
@@ -1457,7 +1520,8 @@
         "new": "이상 구간 지정 UI + 노이즈 삭제/보간",
         "synergy": "키포인트 자동 이상치 제거(IDEA-032)의 수동 보완"
       },
-      "notes": "frame seeker(IDEA-002) 활용. 자동 이상치 제거(IDEA-032)와 보완 관계."
+      "notes": "frame seeker(IDEA-002) 활용. 자동 이상치 제거(IDEA-032)와 보완 관계.",
+      "status": "todo"
     },
     {
       "id": "IDEA-048",
@@ -1492,7 +1556,8 @@
         "new": "센터별 기구 DB, 플랜 생성 로직",
         "synergy": "운동기록 트래킹(IDEA-003)"
       },
-      "notes": "센터 정보가 필요해 확장 어려움 → 우선순위 낮춤(사용자 지시)."
+      "notes": "센터 정보가 필요해 확장 어려움 → 우선순위 낮춤(사용자 지시).",
+      "status": "todo"
     },
     {
       "id": "IDEA-049",
@@ -1527,7 +1592,8 @@
         "new": "필터/LUT 적용, 필터 선택·미리보기 UI",
         "synergy": "화질 향상(IDEA-021), export(IDEA-004)"
       },
-      "notes": "구 '화질·색필터'에서 분리. VSR보다 가벼움."
+      "notes": "구 '화질·색필터'에서 분리. VSR보다 가벼움.",
+      "status": "todo"
     },
     {
       "id": "IDEA-050",
@@ -1562,7 +1628,8 @@
         "new": "푼 문제 분포·시계열 분석, 도달 예측 모델",
         "synergy": "맞춤 문제 추천(IDEA-022)"
       },
-      "notes": "구 IDEA-022 use case ③에서 분리. 문제 추천과 비슷하나 예측 성격이라 별도."
+      "notes": "구 IDEA-022 use case ③에서 분리. 문제 추천과 비슷하나 예측 성격이라 별도.",
+      "status": "todo"
     },
     {
       "id": "IDEA-051",
@@ -1599,7 +1666,8 @@
         "new": "암리치·키 입력 UI, 프로필 저장",
         "synergy": "온보딩 수집 플로우(IDEA-054), 문제 추천 리치(IDEA-022), 올라간/이동 길이 통계(IDEA-003·IDEA-014)"
       },
-      "notes": "유저가 직접 입력한 값을 (a)리치 기반 추천 (b)올라간/이동 길이 통계에 활용. 카메라 측정 아님(입력 폼). 온보딩(IDEA-054)에서 수집하되 입력·활용 기능은 별도 유지."
+      "notes": "유저가 직접 입력한 값을 (a)리치 기반 추천 (b)올라간/이동 길이 통계에 활용. 카메라 측정 아님(입력 폼). 온보딩(IDEA-054)에서 수집하되 입력·활용 기능은 별도 유지.",
+      "status": "todo"
     },
     {
       "id": "IDEA-052",
@@ -1634,7 +1702,8 @@
         "new": "백그라운드 타이머, 알림바 표시, 로컬 알람",
         "synergy": "IDEA-001 세션 트래킹"
       },
-      "notes": "IDEA-001 ②(시도별 운동/휴식 트래킹)의 백그라운드·알림 확장."
+      "notes": "IDEA-001 ②(시도별 운동/휴식 트래킹)의 백그라운드·알림 확장.",
+      "status": "todo"
     },
     {
       "id": "IDEA-053",
@@ -1665,7 +1734,8 @@
         "new": "광고 SDK(AdMob/Meta Audience Network/Pubmatic) 연동, app-ads.txt(Google·Facebook·Pubmatic)",
         "synergy": "BM 모델(PRODUCT_CONTEXT BM 노트)"
       },
-      "notes": "[도입 목적] 광고로 유저가 마찰(friction)을 견디는지 검증. [기술] app-ads.txt에 Google·Facebook·Pubmatic 등록 + 광고 SDK(AdMob/Meta/Pubmatic) 연동. [BM 맥락] BM은 횟수 제한보다 기능 게이팅 지향. 전체는 PRODUCT_CONTEXT §9."
+      "notes": "[도입 목적] 광고로 유저가 마찰(friction)을 견디는지 검증. [기술] app-ads.txt에 Google·Facebook·Pubmatic 등록 + 광고 SDK(AdMob/Meta/Pubmatic) 연동. [BM 맥락] BM은 횟수 제한보다 기능 게이팅 지향. 전체는 PRODUCT_CONTEXT §9.",
+      "status": "todo"
     },
     {
       "id": "IDEA-054",
@@ -1722,7 +1792,8 @@
           "title": "⑤ 계정·권한 (IG 계정·알림 권한)",
           "note": "IG 프로필 = 데이터 수집(현 단계 개발용). 알림 권한 → 타이머/복귀 알림(IDEA-052)."
         }
-      ]
+      ],
+      "status": "todo"
     },
     {
       "id": "IDEA-056",
@@ -1754,7 +1825,8 @@
         "new": "사용량 카운팅, 기능 게이팅(entitlement), 리워드 광고 충전, 구독 결제, 복귀 알림",
         "synergy": "광고(IDEA-053), 프리미엄 후보 기능(백그라운드 IDEA-057·병렬 IDEA-058·고화질 IDEA-021)"
       },
-      "notes": "검토안: 주 3회 무료 → 리워드 광고로 즉시 충전 → 결제 시 무제한. 사용량 복귀 시 알림. PRODUCT_CONTEXT §9."
+      "notes": "검토안: 주 3회 무료 → 리워드 광고로 즉시 충전 → 결제 시 무제한. 사용량 복귀 시 알림. PRODUCT_CONTEXT §9.",
+      "status": "todo"
     },
     {
       "id": "IDEA-057",
@@ -1790,7 +1862,8 @@
         "new": "iOS 백그라운드 태스크(BGProcessingTask), 진행/완료 알림",
         "synergy": "프리미엄 후보, 사용량 모델(IDEA-056)"
       },
-      "notes": "비즈니스 유리 기능(프리미엄 후보). PRODUCT_CONTEXT §9."
+      "notes": "비즈니스 유리 기능(프리미엄 후보). PRODUCT_CONTEXT §9.",
+      "status": "todo"
     },
     {
       "id": "IDEA-058",
@@ -1826,7 +1899,8 @@
         "new": "다중 작업 큐, 병렬 스케줄링",
         "synergy": "동시성 튜닝(IDEA-037), 프리미엄 후보, 사용량 모델(IDEA-056)"
       },
-      "notes": "비즈니스 유리 기능(프리미엄 후보). 기존 동시성 튜닝(IDEA-037)은 단일 영상 내 최적화로 별개. PRODUCT_CONTEXT §9."
+      "notes": "비즈니스 유리 기능(프리미엄 후보). 기존 동시성 튜닝(IDEA-037)은 단일 영상 내 최적화로 별개. PRODUCT_CONTEXT §9.",
+      "status": "todo"
     },
     {
       "id": "IDEA-059",
@@ -1849,7 +1923,8 @@
         "new": "Firebase Remote Config+A/B 또는 Statsig SDK 연동, 실험 플래그",
         "synergy": "온보딩·추천 등 주요 UX 실험"
       },
-      "notes": "도구 선택(Firebase vs Statsig) 비교 필요."
+      "notes": "도구 선택(Firebase vs Statsig) 비교 필요.",
+      "status": "todo"
     },
     {
       "id": "IDEA-060",
@@ -1872,7 +1947,8 @@
         "new": "RevenueCat SDK, 구독 상품, entitlement 연동",
         "synergy": "사용량 과금 모델(IDEA-056), 프리미엄 기능(IDEA-057·058·021)"
       },
-      "notes": "IDEA-056 과금 모델의 인프라."
+      "notes": "IDEA-056 과금 모델의 인프라.",
+      "status": "todo"
     },
     {
       "id": "IDEA-061",
@@ -1908,7 +1984,8 @@
         "new": "디스코드·오픈카톡·인스타 DM 채널 개설, 문의 동선, (검토)문의 시 한 달 무료 쿠폰",
         "synergy": "초기 유저 피드백 → 백로그"
       },
-      "notes": "문의 시 '한 달 무료 쿠폰'은 미확정(?). 초기엔 직접 CS로 피드백 수집."
+      "notes": "문의 시 '한 달 무료 쿠폰'은 미확정(?). 초기엔 직접 CS로 피드백 수집.",
+      "status": "todo"
     },
     {
       "id": "IDEA-062",
@@ -1944,7 +2021,8 @@
         "new": "워터마크 로고 오버레이(위치·크기·스타일)",
         "synergy": "확산·GSO(PRODUCT_CONTEXT §10), 프로=워터마크 제거 옵션 → 과금(IDEA-056)"
       },
-      "notes": "스노우·나이키·락타·오클고처럼 작고 귀엽/세련된 로고. 워터마크가 공유로 퍼지는 바이럴 레버. 프로는 워터마크 제거 옵션 가능."
+      "notes": "스노우·나이키·락타·오클고처럼 작고 귀엽/세련된 로고. 워터마크가 공유로 퍼지는 바이럴 레버. 프로는 워터마크 제거 옵션 가능.",
+      "status": "todo"
     },
     {
       "id": "IDEA-063",
@@ -1979,7 +2057,8 @@
         "new": "예시 비디오 번들, 체험 플로우",
         "synergy": "과금 전환(IDEA-056), 온보딩(IDEA-054)"
       },
-      "notes": "프로 기능 활성화/전환 레버. 영상 없는 유저도 가치 체험."
+      "notes": "프로 기능 활성화/전환 레버. 영상 없는 유저도 가치 체험.",
+      "status": "todo"
     },
     {
       "id": "IDEA-064",
@@ -2001,7 +2080,9 @@
         "reuse": "기존 CTA 버튼",
         "new": "주황 강조 색·디자인",
         "synergy": "핵심 행동(처리/공유) 유도"
-      }
+      },
+      "status": "done",
+      "statusEvidence": "AppColor.Accent.brand=0xE74408(주황) CTA 적용 (BriefingCardBody · StudioPage)."
     },
     {
       "id": "IDEA-065",
@@ -2036,7 +2117,8 @@
         "new": "Kotlin/JNI 미러, Android 앱 UI, Play 스토어 등록",
         "synergy": "확산(PRODUCT_CONTEXT §10)"
       },
-      "notes": "대형 작업 — 추후 children(코어 미러/앱 UI/스토어)으로 분해 권장. PRODUCT_CONTEXT §7 'Android(Kotlin) 미러 deferred' 참조. Ease 2는 큰 공수 반영."
+      "notes": "대형 작업 — 추후 children(코어 미러/앱 UI/스토어)으로 분해 권장. PRODUCT_CONTEXT §7 'Android(Kotlin) 미러 deferred' 참조. Ease 2는 큰 공수 반영.",
+      "status": "todo"
     },
     {
       "id": "IDEA-066",
@@ -2072,7 +2154,8 @@
         "new": "바이오 카피·앱 설치 링크·하이라이트 정리(ASO식)",
         "synergy": "홍보 인스타 채널·GSO(PRODUCT_CONTEXT §10)"
       },
-      "notes": "ASO처럼 키워드·가치 제안을 바이오에 정리 + 앱 설치 링크. §10 홍보 채널."
+      "notes": "ASO처럼 키워드·가치 제안을 바이오에 정리 + 앱 설치 링크. §10 홍보 채널.",
+      "status": "todo"
     },
     {
       "id": "IDEA-067",
@@ -2107,7 +2190,8 @@
         "new": "다중 시도 스켈레톤 정렬·오버레이 렌더",
         "synergy": "스플릿 비교 뷰(IDEA-068), move-seg(IDEA-029)"
       },
-      "notes": "삼각대·홀드 고정 좌표계라 공간 정렬 가능. 자동 시간 동기화(홀드 도착 시 대기 후 동시 재생)는 어려워 보류 — 우선 오버레이 위주, 정렬은 추후/수동 실험."
+      "notes": "삼각대·홀드 고정 좌표계라 공간 정렬 가능. 자동 시간 동기화(홀드 도착 시 대기 후 동시 재생)는 어려워 보류 — 우선 오버레이 위주, 정렬은 추후/수동 실험.",
+      "status": "todo"
     },
     {
       "id": "IDEA-068",
@@ -2142,7 +2226,8 @@
         "new": "위아래 스플릿 뷰, 각 패널 독립 프레임시커",
         "synergy": "다중 시도 오버레이(IDEA-067), frame seeker(IDEA-002)"
       },
-      "notes": "자동 시간 동기화는 어려워 각 패널 프레임시커로 수동 정렬. (당초 '타임라인 연동' 아이디어는 수동 시커로 대체, 연동은 추후 옵션.)"
+      "notes": "자동 시간 동기화는 어려워 각 패널 프레임시커로 수동 정렬. (당초 '타임라인 연동' 아이디어는 수동 시커로 대체, 연동은 추후 옵션.)",
+      "status": "todo"
     },
     {
       "id": "IDEA-069",
@@ -2178,7 +2263,8 @@
         "new": "홀드 크기→손가락 부하 추정 모델",
         "synergy": "보드 문제 추천(IDEA-022), 다음 난이도 예측(IDEA-050), 신체정보(IDEA-051)·체중(IDEA-003)"
       },
-      "notes": "보드는 홀드 크기·지오메트리가 알려져 있어 정량화 가능. 추천(IDEA-022)과 시너지 — 부하 기반 난이도·추천 정교화. 부하는 홀드 크기 외 체중·그립 영향도 있음."
+      "notes": "보드는 홀드 크기·지오메트리가 알려져 있어 정량화 가능. 추천(IDEA-022)과 시너지 — 부하 기반 난이도·추천 정교화. 부하는 홀드 크기 외 체중·그립 영향도 있음.",
+      "status": "todo"
     },
     {
       "id": "IDEA-070",
@@ -2202,7 +2288,8 @@
         "new": "스켈레톤 정규화, 무브 패턴 군집화, 유사도 인덱스/서치",
         "synergy": "약점 보완(IDEA-022 ④), 유사 무브 모아보기(IDEA-018)"
       },
-      "notes": "여러 기능의 공통 엔진. 약점 보완·유사무브(IDEA-018)·무브 패턴 분석의 기반."
+      "notes": "여러 기능의 공통 엔진. 약점 보완·유사무브(IDEA-018)·무브 패턴 분석의 기반.",
+      "status": "todo"
     },
     {
       "id": "IDEA-071",
@@ -2237,7 +2324,8 @@
         "new": "리스트/카드 뷰 타입 옵션 토글",
         "synergy": "-"
       },
-      "notes": "가설: 보기 형태 옵션을 확인한 유저 중 30%+ 가 카드형으로 전환해 사용. (Jira CRUXCUT-138)"
+      "notes": "가설: 보기 형태 옵션을 확인한 유저 중 30%+ 가 카드형으로 전환해 사용. (Jira CRUXCUT-138)",
+      "status": "todo"
     },
     {
       "id": "IDEA-072",
@@ -2259,7 +2347,8 @@
         "reuse": "동작분할 재생/탐색 UI",
         "new": "좌우 끝 더블탭 제스처 → 컷 이동",
         "synergy": "frame seeker(IDEA-002)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-073",
@@ -2281,7 +2370,8 @@
         "reuse": "-",
         "new": "앱스토어/플레이스토어·레딧·DC 크롤러 + 분석",
         "synergy": "경쟁사 리서치(IDEA-074), BM(§9)"
-      }
+      },
+      "status": "todo"
     },
     {
       "id": "IDEA-074",
@@ -2317,7 +2407,8 @@
         "new": "경쟁사 기능·가격·유저 반응(BoulderCam IG 댓글 등) 분석",
         "synergy": "유저 반응 크롤링(IDEA-073), BM(§9)"
       },
-      "notes": "BM 전략 상세(가격 패키징·프리미엄 lever)는 PRODUCT_CONTEXT §9로 정리. 경쟁사: 캡컷·스트라바·크림프드·카야·BoulderCam."
+      "notes": "BM 전략 상세(가격 패키징·프리미엄 lever)는 PRODUCT_CONTEXT §9로 정리. 경쟁사: 캡컷·스트라바·크림프드·카야·BoulderCam.",
+      "status": "todo"
     },
     {
       "id": "IDEA-075",
@@ -2340,7 +2431,9 @@
         "new": "lowconfstride 완화/상향(예: 2) 실험·검증",
         "synergy": "Fast/Quality(IDEA-038), 처리 튜닝(IDEA-037)"
       },
-      "notes": "stride 정책 = fixed + adaptive(score-based). lowconfstride=1 최악 케이스가 fixed stride2보다 느릴 수 있음."
+      "notes": "stride 정책 = fixed + adaptive(score-based). lowconfstride=1 최악 케이스가 fixed stride2보다 느릴 수 있음.",
+      "status": "done",
+      "statusEvidence": "PoseStridePolicy AdaptiveProfile.lowConfStride/lowConfThreshold — 신뢰도 기반 완화·상향, PoseStridePolicyTests green."
     }
   ],
   "stories": [
