@@ -47,13 +47,15 @@
             margin-bottom: 60px;
         }
 
-        .lang-switcher {
+        .lang-switcher,
+        .legal-links {
             display: inline-flex;
             gap: 8px;
             margin-bottom: 18px;
         }
 
-        .lang-link {
+        .lang-link,
+        .legal-link {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -67,7 +69,8 @@
             backdrop-filter: blur(10px);
         }
 
-        .lang-link[aria-current="page"] {
+        .lang-link[aria-current="page"],
+        .legal-link[aria-current="page"] {
             color: var(--text-main);
             border-color: rgba(37, 99, 235, 0.28);
         }
@@ -186,6 +189,10 @@
             <div class="lang-switcher" aria-label="Language switcher">
                 <a class="lang-link" href="/privacy">한국어</a>
                 <a class="lang-link" href="/en/privacy" aria-current="page">English</a>
+            </div>
+            <div class="legal-links" aria-label="Legal documents">
+                <a class="legal-link" href="/en/privacy" aria-current="page">Privacy Policy</a>
+                <a class="legal-link" href="/en/terms">Terms</a>
             </div>
             <div class="badge">CruxCut</div>
             <h1>Privacy Policy</h1>

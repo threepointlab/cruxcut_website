@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이용약관 - CruxCut</title>
+    <meta name="description" content="CruxCut 이용약관">
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --text-main: #101828;
+            --text-muted: #667085;
+            --border: #e4e7ec;
+            --primary-blue: #2563eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            background:
+                radial-gradient(circle at top, rgba(37, 99, 235, 0.08), transparent 35%),
+                var(--bg);
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+            color: var(--text-main);
+            background: transparent;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .terms-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 24px 80px;
+        }
+
+        .terms-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .lang-switcher,
+        .legal-links {
+            display: inline-flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .lang-link,
+        .legal-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-link[aria-current="page"],
+        .legal-link[aria-current="page"] {
+            color: var(--text-main);
+            border-color: rgba(37, 99, 235, 0.28);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+            backdrop-filter: blur(10px);
+        }
+
+        .terms-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .terms-header .update-date {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .terms-content {
+            line-height: 1.8;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 50px rgba(16, 24, 40, 0.06);
+            backdrop-filter: blur(12px);
+        }
+
+        .terms-content h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 48px;
+            margin-bottom: 16px;
+        }
+
+        .terms-content h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+
+        .terms-content p {
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+
+        .terms-content ul,
+        .terms-content ol {
+            margin-left: 24px;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .terms-content li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            padding: 0 24px 40px;
+        }
+
+        .footer .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .copyright {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            text-align: center;
+            margin: 0;
+        }
+
+        @media (max-width: 640px) {
+            .terms-container {
+                padding: 72px 16px 48px;
+            }
+
+            .terms-header h1 {
+                font-size: 2rem;
+            }
+
+            .terms-content {
+                padding: 22px;
+                border-radius: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terms-container">
+        <div class="terms-header">
+            <div class="lang-switcher" aria-label="Language switcher">
+                <a class="lang-link" href="/terms" aria-current="page">한국어</a>
+                <a class="lang-link" href="/en/terms">English</a>
+            </div>
+            <div class="legal-links" aria-label="Legal documents">
+                <a class="legal-link" href="/privacy">개인정보 처리방침</a>
+                <a class="legal-link" href="/terms" aria-current="page">이용약관</a>
+            </div>
+            <div class="badge">CruxCut</div>
+            <h1>CruxCut 이용약관</h1>
+            <p class="update-date">최종 업데이트: 2026년 7월 5일</p>
+        </div>
+        <div class="terms-content">
+            <p>본 이용약관은 CruxCut(이하 "회사", "CruxCut")이 제공하는 모바일 애플리케이션, 웹사이트 및 관련 서비스(이하 "서비스")의 이용 조건과 회사와 이용자 사이의 권리, 의무 및 책임사항을 정합니다. 서비스를 이용하는 경우 본 약관에 동의한 것으로 봅니다.</p>
+
+            <h2>1. 약관의 적용 및 변경</h2>
+            <p>본 약관은 서비스를 이용하는 모든 이용자에게 적용됩니다. 회사는 관련 법령을 위반하지 않는 범위에서 본 약관을 변경할 수 있으며, 변경되는 경우 적용일자와 변경 사유를 서비스 내 공지, 웹사이트 게시 또는 기타 합리적인 방법으로 안내합니다.</p>
+            <p>이용자가 변경된 약관의 적용일 이후에도 서비스를 계속 이용하는 경우 변경된 약관에 동의한 것으로 봅니다. 변경된 약관에 동의하지 않는 경우 서비스 이용을 중단하고 계정을 탈퇴할 수 있습니다.</p>
+
+            <h2>2. 서비스의 내용</h2>
+            <p>CruxCut은 클라이밍 영상 및 이미지를 기반으로 동작 분석, 클라이머 추적, 루트 및 세션 기록, 피드백 확인, 데이터 저장 및 동기화 등 클라이밍 활동을 보조하는 기능을 제공합니다.</p>
+            <p>일부 기능은 기기 내 처리 방식으로 제공되며, 로그인 또는 유료 구독 여부에 따라 이용 가능한 기능, 저장 범위, 동기화 범위가 달라질 수 있습니다.</p>
+
+            <h2>3. 계정 및 이용자 정보</h2>
+            <p>이용자는 서비스 이용을 위해 간편 로그인 등 회사가 제공하는 인증 방식을 사용할 수 있습니다. 이용자는 정확한 정보를 제공하고, 자신의 계정 접근 수단을 안전하게 관리해야 합니다.</p>
+            <p>이용자의 계정에서 발생한 활동은 관련 법령상 회사의 책임으로 인정되는 경우를 제외하고 이용자 본인의 책임입니다. 계정 도용 또는 무단 사용을 알게 된 경우 즉시 회사에 알려야 합니다.</p>
+
+            <h2>4. 구독 및 결제</h2>
+            <p>회사는 일부 고급 기능, 클라우드 저장, 동기화 또는 기타 부가 기능을 유료 구독 상품으로 제공할 수 있습니다. 구독 상품의 가격, 기간, 갱신 조건 및 포함 기능은 앱 마켓, 결제 화면 또는 서비스 내 안내에 따릅니다.</p>
+            <p>앱 마켓 또는 외부 결제 제공자를 통해 결제한 경우 결제, 취소, 환불 및 청약철회는 해당 제공자의 정책과 관련 법령에 따릅니다. 회사가 직접 결제를 제공하는 경우 별도로 안내하는 결제 및 환불 조건이 적용됩니다.</p>
+
+            <h2>5. 이용자의 콘텐츠</h2>
+            <p>이용자는 자신이 업로드하거나 생성하는 영상, 이미지, 메모, 라벨, 루트 및 세션 기록 등 콘텐츠에 필요한 권리를 보유하고 있어야 합니다. 이용자는 타인의 권리, 초상권, 개인정보 또는 법령을 침해하는 콘텐츠를 업로드하거나 공유해서는 안 됩니다.</p>
+            <p>이용자는 서비스 제공, 저장, 동기화, 분석 결과 표시, 백업, 오류 진단 및 기능 개선을 위해 필요한 범위에서 회사가 이용자 콘텐츠를 처리할 수 있도록 허락합니다. 이용자의 콘텐츠 소유권은 이용자에게 남아 있습니다.</p>
+
+            <h2>6. AI 분석 및 운동 관련 고지</h2>
+            <p>CruxCut의 분석 결과와 피드백은 클라이밍 활동을 보조하기 위한 참고 정보입니다. 서비스는 전문 코칭, 안전 교육, 의료 진단, 치료 또는 부상 예방을 대체하지 않습니다.</p>
+            <p>이용자는 자신의 신체 상태, 주변 환경, 장비 상태 및 암장 규칙을 직접 확인해야 하며, 위험한 동작이나 통증이 있는 상황에서는 전문가의 조언을 받아야 합니다.</p>
+
+            <h2>7. 금지 행위</h2>
+            <p>이용자는 다음 행위를 해서는 안 됩니다.</p>
+            <ul>
+                <li>법령, 본 약관 또는 서비스 운영 정책을 위반하는 행위</li>
+                <li>타인의 계정, 개인정보, 초상권, 저작권 또는 기타 권리를 침해하는 행위</li>
+                <li>서비스를 역설계, 무단 복제, 변조, 크롤링 또는 자동화된 방식으로 과도하게 이용하는 행위</li>
+                <li>악성 코드, 비정상 트래픽 또는 서비스 안정성을 해치는 자료를 전송하는 행위</li>
+                <li>서비스의 분석 결과를 안전성, 경기 성과 또는 건강 상태에 대한 보증으로 오인하게 하는 행위</li>
+                <li>기타 회사 또는 제3자에게 손해를 끼치거나 서비스 운영을 방해하는 행위</li>
+            </ul>
+
+            <h2>8. 지식재산권</h2>
+            <p>서비스, 소프트웨어, 디자인, 로고, 상표, 분석 모델, 데이터 구조 및 관련 콘텐츠에 대한 권리는 회사 또는 정당한 권리자에게 있습니다. 이용자는 본 약관에 따라 허용된 범위에서만 서비스를 이용할 수 있으며, 회사의 사전 서면 동의 없이 서비스를 복제, 배포, 판매, 임대, 이전 또는 2차 저작물 작성에 사용할 수 없습니다.</p>
+
+            <h2>9. 개인정보 보호</h2>
+            <p>회사는 서비스 제공을 위해 필요한 개인정보를 관련 법령과 CruxCut 개인정보 처리방침에 따라 처리합니다. 개인정보 처리에 관한 자세한 사항은 <a href="/privacy">개인정보 처리방침</a>에서 확인할 수 있습니다.</p>
+
+            <h2>10. 서비스 변경, 중단 및 종료</h2>
+            <p>회사는 운영상, 기술상 또는 사업상 필요에 따라 서비스의 전부 또는 일부를 변경, 중단하거나 종료할 수 있습니다. 회사는 예측 가능한 경우 합리적인 방법으로 사전에 안내하며, 긴급한 보안 문제, 장애, 법령상 요구 등 부득이한 사유가 있는 경우 사후에 안내할 수 있습니다.</p>
+
+            <h2>11. 이용 제한 및 해지</h2>
+            <p>이용자가 본 약관을 위반하거나 서비스 운영을 방해하는 경우 회사는 관련 법령과 서비스 정책에 따라 서비스 이용을 제한하거나 계정을 해지할 수 있습니다. 이용자는 언제든지 서비스 내 제공되는 절차를 통해 계정을 탈퇴할 수 있습니다.</p>
+
+            <h2>12. 책임의 제한</h2>
+            <p>회사는 관련 법령상 허용되는 범위에서 서비스의 정확성, 완전성, 특정 목적 적합성, 계속적 제공 또는 오류 없음에 대해 보증하지 않습니다. 회사는 회사의 고의 또는 과실로 인한 경우를 제외하고, 이용자의 서비스 이용 또는 이용 불가로 인해 발생한 간접적, 부수적, 특별, 결과적 손해에 대해 책임을 지지 않습니다.</p>
+            <p>회사는 이용자의 귀책 사유, 네트워크 또는 기기 환경, 앱 마켓 또는 외부 서비스, 천재지변 등 회사가 합리적으로 통제할 수 없는 사유로 발생한 손해에 대해 책임을 지지 않습니다.</p>
+
+            <h2>13. 준거법 및 분쟁 해결</h2>
+            <p>본 약관은 대한민국 법령에 따라 해석되고 적용됩니다. 서비스와 관련하여 분쟁이 발생한 경우 회사와 이용자는 성실히 협의하여 해결하도록 노력합니다. 협의로 해결되지 않는 분쟁은 관련 법령에 따른 관할 법원에서 해결합니다.</p>
+
+            <h2>14. 연락처</h2>
+            <p>본 약관 또는 서비스 이용에 관한 문의는 아래 연락처로 보낼 수 있습니다.</p>
+            <ul>
+                <li><strong>담당자:</strong> 유동근</li>
+                <li><strong>연락처:</strong> 010-3813-9225, cruxcutApp@gmail.com</li>
+            </ul>
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="container">
+            <p class="copyright">© 2026 CruxCut. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
