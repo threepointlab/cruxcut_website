@@ -36,8 +36,16 @@ export default {
             return env.ASSETS.fetch(new Request(new URL("/privacy.html", url), request));
         }
 
+        if (url.pathname === "/terms") {
+            return env.ASSETS.fetch(new Request(new URL("/terms.html", url), request));
+        }
+
         if (url.pathname === "/en/privacy") {
             return env.ASSETS.fetch(new Request(new URL("/en/privacy.html", url), request));
+        }
+
+        if (url.pathname === "/en/terms") {
+            return env.ASSETS.fetch(new Request(new URL("/en/terms.html", url), request));
         }
 
         if (url.pathname === "/loading") {
