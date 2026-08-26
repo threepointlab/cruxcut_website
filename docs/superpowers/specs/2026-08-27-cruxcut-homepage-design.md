@@ -1,8 +1,8 @@
 # CruxCut homepage design
 
-**Date:** 2026-08-27  
-**Issue:** TPL-243 — GEO/SEO 를 위한 cruxcut 홈페이지 세팅하기  
-**Repository:** `threepointlab/cruxcut_website`  
+**Date:** 2026-08-27<br>
+**Issue:** TPL-243 — GEO/SEO 를 위한 cruxcut 홈페이지 세팅하기<br>
+**Repository:** `threepointlab/cruxcut_website`<br>
 **Status:** Approved direction; implementation pending
 
 ## Summary
@@ -127,22 +127,22 @@ The homepage wordmark links to `/`. Guide pages should also link their wordmark 
 
 Visible FAQ copy and `FAQPage` structured data must match exactly. Initial questions:
 
-1. **What is CruxCut?**  
+1. **What is CruxCut?**<br>
    CruxCut is an AI climbing video editor for iPhone. It turns raw climbing footage into a follow-cam edit, crux highlights, and a shareable route sticker.
 
-2. **Can CruxCut automatically follow a climber?**  
+2. **Can CruxCut automatically follow a climber?**<br>
    Yes. CruxCut detects the climber and applies automatic pan and zoom so a fixed wide shot feels closer to a follow-cam video.
 
-3. **How does CruxCut create climbing highlights?**  
+3. **How does CruxCut create climbing highlights?**<br>
    CruxCut analyzes movement in the climb to surface difficult and dynamic sections. Those sections can become a short clip or a highlight reel across multiple climbs.
 
-4. **What is a route sticker?**  
+4. **What is a route sticker?**<br>
    A route sticker visualizes the path of the climb together with details such as grade and result, so the session can be shared like a workout record.
 
-5. **Does CruxCut upload climbing videos to a server for AI processing?**  
+5. **Does CruxCut upload climbing videos to a server for AI processing?**<br>
    No processing-server upload is required. CruxCut performs video analysis and editing on the user's iPhone.
 
-6. **Which devices does CruxCut support?**  
+6. **Which devices does CruxCut support?**<br>
    CruxCut is available for iPhone and requires iOS 18 or later.
 
 ## Visual direction
