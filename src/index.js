@@ -25,7 +25,7 @@ export default {
         }
 
         if (url.pathname === "/") {
-            return env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/en") {
@@ -33,27 +33,27 @@ export default {
         }
 
         if (url.pathname === "/privacy") {
-            return env.ASSETS.fetch(new Request(new URL("/privacy.html", url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/terms") {
-            return env.ASSETS.fetch(new Request(new URL("/terms.html", url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/en/privacy") {
-            return env.ASSETS.fetch(new Request(new URL("/en/privacy.html", url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/en/terms") {
-            return env.ASSETS.fetch(new Request(new URL("/en/terms.html", url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/loading") {
-            return env.ASSETS.fetch(new Request(new URL("/loading.html", url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/guides" || url.pathname === "/guides/") {
-            return env.ASSETS.fetch(new Request(new URL("/guides/index.html", url), request));
+            return env.ASSETS.fetch(new Request(new URL("/guides/", url), request));
         }
 
         const climbingVideoGuide = "/guides/how-to-film-and-edit-climbing-videos";
@@ -62,23 +62,23 @@ export default {
         }
 
         if (url.pathname === climbingVideoGuide) {
-            return env.ASSETS.fetch(new Request(new URL(`${climbingVideoGuide}.html`, url), request));
+            return env.ASSETS.fetch(request);
         }
 
         if (url.pathname === "/admin" || url.pathname === "/admin/") {
-            return env.ASSETS.fetch(new Request(new URL("/admin/index.html", url), request));
+            return env.ASSETS.fetch(new Request(new URL("/admin/", url), request));
         }
 
         if (url.pathname === "/mindmap" || url.pathname === "/admin/mindmap") {
-            return env.ASSETS.fetch(new Request(new URL("/admin/mindmap.html", url), request));
+            return env.ASSETS.fetch(new Request(new URL("/admin/mindmap", url), request));
         }
 
         if (url.pathname === "/backlog" || url.pathname === "/backlog/") {
-            return env.ASSETS.fetch(new Request(new URL("/backlog/index.html", url), request));
+            return env.ASSETS.fetch(new Request(new URL("/backlog/", url), request));
         }
 
         if (url.pathname === "/backlog/stories" || url.pathname === "/backlog/stories/") {
-            return env.ASSETS.fetch(new Request(new URL("/backlog/stories.html", url), request));
+            return env.ASSETS.fetch(new Request(new URL("/backlog/stories", url), request));
         }
 
         return env.ASSETS.fetch(request);

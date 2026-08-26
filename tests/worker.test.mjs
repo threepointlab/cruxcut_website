@@ -3,6 +3,7 @@ import {readFile} from "node:fs/promises";
 import test from "node:test";
 
 const source = await readFile(new URL("../src/index.js", import.meta.url), "utf8");
+const config = await readFile(new URL("../wrangler.toml", import.meta.url), "utf8");
 const workerUrl = `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const {default: worker} = await import(workerUrl);
 
@@ -19,7 +20,7 @@ test("serves the climbing video guide from its canonical path", async () => {
     );
 
     assert.equal(response.status, 200);
-    assert.equal(await response.text(), "/guides/how-to-film-and-edit-climbing-videos.html");
+    assert.equal(await response.text(), "/guides/how-to-film-and-edit-climbing-videos");
 });
 
 test("redirects the guide html filename to its canonical path", async () => {
@@ -42,7 +43,7 @@ test("serves the public guides index", async () => {
     );
 
     assert.equal(response.status, 200);
-    assert.equal(await response.text(), "/guides/index.html");
+    assert.equal(await response.text(), "/guides/");
 });
 
 test("serves the product homepage from the root", async () => {
@@ -52,7 +53,7 @@ test("serves the product homepage from the root", async () => {
     );
 
     assert.equal(response.status, 200);
-    assert.equal(await response.text(), "/index.html");
+    assert.equal(await response.text(), "/");
 });
 
 test("keeps the canonical privacy and terms routes", async () => {
@@ -65,6 +66,12 @@ test("keeps the canonical privacy and terms routes", async () => {
         env,
     );
 
-    assert.equal(await privacy.text(), "/privacy.html");
-    assert.equal(await terms.text(), "/terms.html");
+    assert.equal(await privacy.text(), "/privacy");
+    assert.equal(await terms.text(), "/terms");
+});
+
+test("keeps automatic HTML canonicalization and protected asset routing", () => {
+    assert.match(config, /binding\s*=\s*"ASSETS"/);
+    assert.match(config, /html_handling\s*=\s*"auto-trailing-slash"/);
+    assert.match(config, /run_worker_first\s*=.*"\/backlog\/\*"/);
 });
