@@ -25,7 +25,7 @@ export default {
         }
 
         if (url.pathname === "/") {
-            return Response.redirect(new URL("/privacy", url), 302);
+            return env.ASSETS.fetch(new Request(new URL("/index.html", url), request));
         }
 
         if (url.pathname === "/en") {

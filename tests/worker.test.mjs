@@ -44,3 +44,27 @@ test("serves the public guides index", async () => {
     assert.equal(response.status, 200);
     assert.equal(await response.text(), "/guides/index.html");
 });
+
+test("serves the product homepage from the root", async () => {
+    const response = await worker.fetch(
+        new Request("https://www.cruxcut.com/"),
+        env,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(await response.text(), "/index.html");
+});
+
+test("keeps the canonical privacy and terms routes", async () => {
+    const privacy = await worker.fetch(
+        new Request("https://www.cruxcut.com/privacy"),
+        env,
+    );
+    const terms = await worker.fetch(
+        new Request("https://www.cruxcut.com/terms"),
+        env,
+    );
+
+    assert.equal(await privacy.text(), "/privacy.html");
+    assert.equal(await terms.text(), "/terms.html");
+});
