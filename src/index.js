@@ -52,6 +52,19 @@ export default {
             return env.ASSETS.fetch(new Request(new URL("/loading.html", url), request));
         }
 
+        if (url.pathname === "/guides" || url.pathname === "/guides/") {
+            return env.ASSETS.fetch(new Request(new URL("/guides/index.html", url), request));
+        }
+
+        const climbingVideoGuide = "/guides/how-to-film-and-edit-climbing-videos";
+        if (url.pathname === `${climbingVideoGuide}.html`) {
+            return Response.redirect(new URL(climbingVideoGuide, url), 301);
+        }
+
+        if (url.pathname === climbingVideoGuide) {
+            return env.ASSETS.fetch(new Request(new URL(`${climbingVideoGuide}.html`, url), request));
+        }
+
         if (url.pathname === "/admin" || url.pathname === "/admin/") {
             return env.ASSETS.fetch(new Request(new URL("/admin/index.html", url), request));
         }
