@@ -68,3 +68,14 @@ test("keeps product information available without JavaScript", () => {
     assert.match(html, /href="\/privacy"/);
     assert.match(html, /href="\/guides\/how-to-film-and-edit-climbing-videos"/);
 });
+
+test("publishes the absolute social preview metadata", () => {
+    assert.match(
+        html,
+        /<meta property="og:image" content="https:\/\/www\.cruxcut\.com\/assets\/home\/og\.png">/,
+    );
+    assert.match(
+        html,
+        /<meta name="twitter:image" content="https:\/\/www\.cruxcut\.com\/assets\/home\/og\.png">/,
+    );
+});

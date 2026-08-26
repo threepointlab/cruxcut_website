@@ -11,9 +11,15 @@
     <meta property="og:title" content="CruxCut — AI Climbing Video Editor for iPhone">
     <meta property="og:description" content="Turn raw climbing footage into a follow-cam edit, crux highlights, and a shareable route sticker.">
     <meta property="og:url" content="https://www.cruxcut.com/">
+    <meta property="og:image" content="https://www.cruxcut.com/assets/home/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Great sends deserve great videos — CruxCut">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="CruxCut — AI Climbing Video Editor for iPhone">
     <meta name="twitter:description" content="Turn raw climbing footage into a follow-cam edit, crux highlights, and a shareable route sticker.">
+    <meta name="twitter:image" content="https://www.cruxcut.com/assets/home/og.png">
+    <meta name="twitter:image:alt" content="Great sends deserve great videos — CruxCut">
     <meta name="theme-color" content="#0D0F12">
     <link rel="icon" href="/assets/home/cruxcut-mark.png">
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -84,7 +90,10 @@
     </div>
     <figure class="hero-proof">
       <div class="proof-labels" aria-hidden="true"><span>Original</span><span>CruxCut</span></div>
-      <img src="/assets/home/followcam-poster.jpg" width="1280" height="720" alt="A fixed wide climbing video beside CruxCut's tighter follow-cam result">
+      <video data-autoplay autoplay muted loop playsinline preload="metadata" poster="/assets/home/followcam-poster.jpg" aria-label="Original climbing footage beside CruxCut's tighter follow-cam result">
+        <source src="/assets/home/followcam-proof.mp4" type="video/mp4">
+        <img src="/assets/home/followcam-poster.jpg" width="1280" height="720" alt="A fixed wide climbing video beside CruxCut's tighter follow-cam result">
+      </video>
       <figcaption>One climb, reframed around the climber.</figcaption>
     </figure>
   </section>
@@ -102,11 +111,17 @@
     </article>
     <article id="highlights" class="feature">
       <div class="feature-copy"><p class="feature-number">02</p><h2 class="feature-title">Crux Highlights</h2><p>Find the hard, dynamic moments without scrubbing through every attempt. CruxCut uses the climb's movement to organize crux-worthy sections into short clips and multi-climb highlight reels.</p></div>
-      <img src="/assets/home/highlights-poster.jpg" width="540" height="960" alt="CruxCut highlight sharing flow on iPhone">
+      <video data-autoplay autoplay muted loop playsinline preload="none" poster="/assets/home/highlights-poster.jpg" aria-label="CruxCut highlight sharing flow on iPhone">
+        <source src="/assets/home/highlights-proof.mp4" type="video/mp4">
+        <img src="/assets/home/highlights-poster.jpg" width="540" height="960" alt="CruxCut highlight sharing flow on iPhone">
+      </video>
     </article>
     <article id="route-stickers" class="feature">
       <div class="feature-copy"><p class="feature-number">03</p><h2 class="feature-title">Route Stickers</h2><p>Turn the climbing path, grade, and result into a visual workout sticker that is easy to add to a video or share on social media.</p></div>
-      <img src="/assets/home/route-sticker-poster.jpg" width="540" height="960" alt="A climbing path drawn as a shareable heart-shaped route sticker">
+      <video data-autoplay autoplay muted loop playsinline preload="none" poster="/assets/home/route-sticker-poster.jpg" aria-label="A climbing path becoming a shareable heart-shaped route sticker">
+        <source src="/assets/home/route-sticker-proof.mp4" type="video/mp4">
+        <img src="/assets/home/route-sticker-poster.jpg" width="540" height="960" alt="A climbing path becoming a shareable heart-shaped route sticker">
+      </video>
     </article>
   </section>
 
@@ -136,5 +151,6 @@
   <section class="final-cta container" aria-labelledby="cta-title"><img src="/assets/home/cruxcut-mark.png" width="1168" height="1160" alt=""><div><h2 id="cta-title">Your next send is already worth watching.</h2><a class="button" href="https://apps.apple.com/app/apple-store/id6771268613?pt=127608181&amp;ct=website_home&amp;mt=8">Get CruxCut for iPhone</a></div></section>
 </main>
 <footer class="footer container"><a class="wordmark" href="/">cruxcut<span>.</span></a><nav aria-label="Footer navigation"><a href="/guides">Guides</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><p>© 2026 ThreePointLab</p></footer>
+<script defer src="/assets/home/home.js"></script>
 </body>
 </html>
