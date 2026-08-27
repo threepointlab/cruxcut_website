@@ -38,8 +38,8 @@ const proofContracts = [
         path: "../assets/home/highlights-proof.mp4",
         width: 540,
         height: 960,
-        minimumDuration: 9.2,
-        maximumDuration: 9.5,
+        minimumDuration: 9.9,
+        maximumDuration: 10.1,
     },
 ];
 

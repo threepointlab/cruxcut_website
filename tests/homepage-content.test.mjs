@@ -80,14 +80,13 @@ test("publishes the absolute social preview metadata", () => {
     );
 });
 
-test("describes the visible climbing proof instead of a generic app flow", () => {
+test("describes the current follow-cam and highlight proof media", () => {
     assert.match(
         html,
         /aria-label="Outdoor lead wide shot beside a tighter CruxCut follow-cam crop"/,
     );
     assert.match(
         html,
-        /aria-label="Fast indoor bouldering completion from IMG_3532"/,
+        /aria-label="CruxCut highlight sharing flow on iPhone"/,
     );
-    assert.doesNotMatch(html, /highlight sharing flow on iPhone/i);
 });
