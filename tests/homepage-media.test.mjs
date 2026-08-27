@@ -41,13 +41,13 @@ test("follow-cam proof is backed by a moving tracked crop path", async () => {
     assert.ok(verticalRange >= 40, `vertical range is only ${verticalRange}px`);
 });
 
-test("follow-cam proof compresses the approved 20–100 second source span into 12 seconds", async () => {
+test("follow-cam proof compresses the approved 20–65 second source span into 15 seconds", async () => {
     const trackingUrl = new URL("../assets/home/followcam-tracking.json", import.meta.url);
     const tracking = JSON.parse(await readFile(trackingUrl, "utf8"));
 
-    assert.deepEqual(tracking.segment, {startSeconds: 20, durationSeconds: 80});
-    assert.equal(tracking.outputDurationSeconds, 12);
-    assert.ok(Math.abs(tracking.playbackRate - (80 / 12)) < 0.001);
+    assert.deepEqual(tracking.segment, {startSeconds: 20, durationSeconds: 45});
+    assert.equal(tracking.outputDurationSeconds, 15);
+    assert.equal(tracking.playbackRate, 3);
 });
 
 const proofContracts = [
@@ -55,8 +55,8 @@ const proofContracts = [
         path: "../assets/home/followcam-proof.mp4",
         width: 1280,
         height: 720,
-        minimumDuration: 11.8,
-        maximumDuration: 12.2,
+        minimumDuration: 14.8,
+        maximumDuration: 15.2,
     },
     {
         path: "../assets/home/highlights-proof.mp4",
