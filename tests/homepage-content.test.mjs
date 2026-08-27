@@ -79,3 +79,15 @@ test("publishes the absolute social preview metadata", () => {
         /<meta name="twitter:image" content="https:\/\/www\.cruxcut\.com\/assets\/home\/og\.png">/,
     );
 });
+
+test("describes the visible climbing proof instead of a generic app flow", () => {
+    assert.match(
+        html,
+        /aria-label="Outdoor lead wide shot beside a tighter CruxCut follow-cam crop"/,
+    );
+    assert.match(
+        html,
+        /aria-label="Fast indoor bouldering completion from IMG_3532"/,
+    );
+    assert.doesNotMatch(html, /highlight sharing flow on iPhone/i);
+});
