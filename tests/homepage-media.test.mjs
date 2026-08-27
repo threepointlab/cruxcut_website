@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {execFile} from "node:child_process";
-import {stat} from "node:fs/promises";
+import {readFile, stat} from "node:fs/promises";
 import test from "node:test";
 import {promisify} from "node:util";
 
@@ -24,6 +24,21 @@ test("ships every homepage media asset inside its byte budget", async () => {
             `${relativePath} is ${metadata.size} bytes; limit is ${maximumBytes}`,
         );
     }
+});
+
+test("follow-cam proof is backed by a moving tracked crop path", async () => {
+    const trackingUrl = new URL("../assets/home/followcam-tracking.json", import.meta.url);
+    const tracking = JSON.parse(await readFile(trackingUrl, "utf8"));
+    const centers = tracking.frames.map(({cx, cy}) => ({cx, cy}));
+    const horizontalRange = Math.max(...centers.map(({cx}) => cx))
+        - Math.min(...centers.map(({cx}) => cx));
+    const verticalRange = Math.max(...centers.map(({cy}) => cy))
+        - Math.min(...centers.map(({cy}) => cy));
+
+    assert.equal(tracking.lockedOn, true);
+    assert.ok(centers.length >= 300, `only ${centers.length} tracked frames`);
+    assert.ok(horizontalRange >= 40, `horizontal range is only ${horizontalRange}px`);
+    assert.ok(verticalRange >= 40, `vertical range is only ${verticalRange}px`);
 });
 
 const proofContracts = [
