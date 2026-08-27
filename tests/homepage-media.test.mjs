@@ -65,6 +65,13 @@ const proofContracts = [
         minimumDuration: 9.9,
         maximumDuration: 10.1,
     },
+    {
+        path: "../assets/home/route-sticker-proof.mp4",
+        width: 540,
+        height: 960,
+        minimumDuration: 5.0,
+        maximumDuration: 5.3,
+    },
 ];
 
 test("ships concise web-playable proof loops with their intended framing", async () => {

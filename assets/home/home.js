@@ -4,6 +4,10 @@ const playbackButtons = new Map(
     [...document.querySelectorAll("[data-video-toggle]")]
         .map((button) => [button.dataset.videoToggle, button]),
 );
+const stickerOverlays = new Map(
+    [...document.querySelectorAll("[data-sticker-overlay-for]")]
+        .map((overlay) => [overlay.dataset.stickerOverlayFor, overlay]),
+);
 
 const syncPlaybackButton = (video) => {
     const button = playbackButtons.get(video.id);
@@ -18,8 +22,18 @@ const syncPlaybackButton = (video) => {
 
 for (const video of proofVideos) {
     const button = playbackButtons.get(video.id);
+    const stickerOverlay = stickerOverlays.get(video.id);
     video.addEventListener("play", () => syncPlaybackButton(video));
     video.addEventListener("pause", () => syncPlaybackButton(video));
+
+    if (stickerOverlay) {
+        const revealAt = Number(video.dataset.stickerRevealAt);
+        const syncStickerOverlay = () => {
+            stickerOverlay.classList.toggle("is-visible", video.currentTime >= revealAt);
+        };
+        video.addEventListener("timeupdate", syncStickerOverlay);
+        syncStickerOverlay();
+    }
 
     button?.addEventListener("click", async () => {
         if (video.paused) {

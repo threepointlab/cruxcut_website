@@ -151,3 +151,79 @@ test("playback controls pause and resume their proof", async () => {
     assert.equal(video.paused, true);
     assert.equal(button.textContent, "Play");
 });
+
+test("reveals the route sticker only after its heart path finishes drawing", async () => {
+    const listeners = new Map();
+    const visibleClasses = new Set();
+    const video = {
+        id: "route-sticker-proof-video",
+        paused: true,
+        currentTime: 0,
+        dataset: {stickerRevealAt: "2.6"},
+        attributes: new Set(),
+        addEventListener(name, listener) {
+            listeners.set(`video:${name}`, listener);
+        },
+        pause() {
+            this.paused = true;
+            listeners.get("video:pause")?.();
+        },
+        play() {
+            this.paused = false;
+            listeners.get("video:play")?.();
+            return Promise.resolve();
+        },
+        removeAttribute(name) {
+            this.attributes.delete(name);
+        },
+        setAttribute(name) {
+            this.attributes.add(name);
+        },
+    };
+    const button = {
+        dataset: {videoToggle: video.id},
+        textContent: "",
+        attributes: new Map(),
+        addEventListener() {},
+        setAttribute(name, value) {
+            this.attributes.set(name, value);
+        },
+    };
+    const overlay = {
+        dataset: {stickerOverlayFor: video.id},
+        classList: {
+            toggle(name, force) {
+                if (force) {
+                    visibleClasses.add(name);
+                    return;
+                }
+                visibleClasses.delete(name);
+            },
+        },
+    };
+    const reducedMotion = {matches: false, addEventListener() {}};
+
+    vm.runInNewContext(script, {
+        document: {
+            getElementById: (id) => id === video.id ? video : null,
+            querySelectorAll: (selector) => {
+                if (selector === "video[data-autoplay]") return [video];
+                if (selector === "[data-video-toggle]") return [button];
+                if (selector === "[data-sticker-overlay-for]") return [overlay];
+                return [];
+            },
+        },
+        window: {matchMedia: () => reducedMotion},
+    });
+    await Promise.resolve();
+
+    assert.equal(visibleClasses.has("is-visible"), false);
+
+    video.currentTime = 2.6;
+    listeners.get("video:timeupdate")();
+    assert.equal(visibleClasses.has("is-visible"), true);
+
+    video.currentTime = 0.1;
+    listeners.get("video:timeupdate")();
+    assert.equal(visibleClasses.has("is-visible"), false);
+});
