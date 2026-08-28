@@ -43,6 +43,15 @@ export default {
             return env.ASSETS.fetch(request);
         }
 
+        const highlightsGuide = "/guides/automatic-climbing-highlights";
+        if (url.pathname === `${highlightsGuide}.html`) {
+            return Response.redirect(new URL(highlightsGuide, url), 301);
+        }
+
+        if (url.pathname === highlightsGuide) {
+            return env.ASSETS.fetch(request);
+        }
+
         if (url.pathname === "/admin" || url.pathname === "/admin/") {
             return env.ASSETS.fetch(new Request(new URL("/admin/", url), request));
         }

@@ -17,7 +17,7 @@
         .wordmark{font-size:24px;font-weight:850;color:var(--text);text-decoration:none}.wordmark span{color:var(--brand)}
         .cta{background:var(--brand);color:#fff;text-decoration:none;padding:10px 15px;border-radius:10px;font-weight:750}
         main{padding-top:64px;padding-bottom:88px}h1{font-size:clamp(36px,7vw,64px);line-height:1.02;letter-spacing:-.04em;margin:0 0 18px}
-        .lead{max-width:660px;color:var(--muted);font-size:19px;margin-bottom:42px}.card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;color:var(--text);text-decoration:none}
+        .lead{max-width:660px;color:var(--muted);font-size:19px;margin-bottom:42px}.cards{display:grid;gap:18px}.card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px;color:var(--text);text-decoration:none}
         .card:hover{border-color:var(--brand)}.eyebrow{color:var(--brand);font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:12px}.card h2{font-size:26px;margin:8px 0}.card p{color:var(--muted);margin:0}
         footer{border-top:1px solid var(--line);color:var(--muted);font-size:13px}
     </style>
@@ -27,11 +27,18 @@
 <main>
     <h1>Better climbing videos,<br>less editing.</h1>
     <p class="lead">Practical filming and editing advice for climbers who want useful beta footage and share-ready vertical clips.</p>
-    <a class="card" href="/guides/how-to-film-and-edit-climbing-videos">
-        <span class="eyebrow">Filming &amp; editing</span>
-        <h2>How to Film and Edit Climbing Videos</h2>
-        <p>Camera placement, clean framing, simple edits, and when climbing-specific AI tracking helps.</p>
-    </a>
+    <div class="cards">
+        <a class="card" href="/guides/automatic-climbing-highlights">
+            <span class="eyebrow">Automatic highlights</span>
+            <h2>How to Automatically Create Climbing Highlights on iPhone</h2>
+            <p>Find crux-worthy moments, choose the clips that matter, and export a short climbing reel.</p>
+        </a>
+        <a class="card" href="/guides/how-to-film-and-edit-climbing-videos">
+            <span class="eyebrow">Filming &amp; editing</span>
+            <h2>How to Film and Edit Climbing Videos</h2>
+            <p>Camera placement, clean framing, simple edits, and when climbing-specific AI tracking helps.</p>
+        </a>
+    </div>
 </main>
 <footer>© 2026 ThreePointLab · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></footer>
 </body>
