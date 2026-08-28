@@ -5,6 +5,7 @@ node_modules/
 docs/
 src/
 tests/
+backlog/
 .gitignore
 DESIGN.md
 config.example.js
