@@ -9,7 +9,12 @@ const {default: worker} = await import(workerUrl);
 
 const env = {
     ASSETS: {
-        fetch: async (request) => new Response(new URL(request.url).pathname),
+        fetch: async (request) => {
+            const pathname = new URL(request.url).pathname;
+            return new Response(pathname, {
+                status: pathname.startsWith("/backlog") ? 404 : 200,
+            });
+        },
     },
 };
 
@@ -70,8 +75,17 @@ test("keeps the canonical privacy and terms routes", async () => {
     assert.equal(await terms.text(), "/terms");
 });
 
-test("keeps automatic HTML canonicalization and protected asset routing", () => {
+test("does not expose the removed backlog", async () => {
+    const response = await worker.fetch(
+        new Request("https://www.cruxcut.com/backlog"),
+        env,
+    );
+
+    assert.equal(response.status, 404);
+    assert.equal(response.headers.get("www-authenticate"), null);
+});
+
+test("keeps automatic HTML canonicalization", () => {
     assert.match(config, /binding\s*=\s*"ASSETS"/);
     assert.match(config, /html_handling\s*=\s*"auto-trailing-slash"/);
-    assert.match(config, /run_worker_first\s*=.*"\/backlog\/\*"/);
 });
