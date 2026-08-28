@@ -57,16 +57,25 @@ test("allows AI search and user-directed retrieval crawlers", () => {
     }
 });
 
-test("keeps model-training crawlers out", () => {
-    for (const agent of ["GPTBot", "ClaudeBot", "Google-Extended"]) {
-        assert.equal(isAllowed(agent), false, `${agent} can crawl the site`);
+test("allows model-training crawlers", () => {
+    for (const agent of [
+        "GPTBot",
+        "ClaudeBot",
+        "Google-Extended",
+        "Applebot-Extended",
+        "Amazonbot",
+        "Bytespider",
+        "CCBot",
+        "meta-externalagent",
+    ]) {
+        assert.equal(isAllowed(agent), true, `${agent} cannot crawl the site`);
     }
 });
 
 test("declares discovery use and the canonical sitemap", () => {
     assert.match(
         robots,
-        /^Content-Signal:\s*search=yes,ai-input=yes,ai-train=no,use=reference$/m,
+        /^Content-Signal:\s*search=yes,ai-input=yes,ai-train=yes,use=reference$/m,
     );
     assert.match(robots, /^Sitemap:\s*https:\/\/www\.cruxcut\.com\/sitemap\.xml$/m);
 });

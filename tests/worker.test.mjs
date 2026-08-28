@@ -6,10 +6,22 @@ const source = await readFile(new URL("../src/index.js", import.meta.url), "utf8
 const config = await readFile(new URL("../wrangler.toml", import.meta.url), "utf8");
 const workerUrl = `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
 const {default: worker} = await import(workerUrl);
+const publicAssetPaths = new Set([
+    "/",
+    "/privacy",
+    "/terms",
+    "/guides/",
+    "/guides/how-to-film-and-edit-climbing-videos",
+]);
 
 const env = {
     ASSETS: {
-        fetch: async (request) => new Response(new URL(request.url).pathname),
+        fetch: async (request) => {
+            const pathname = new URL(request.url).pathname;
+            return new Response(pathname, {
+                status: publicAssetPaths.has(pathname) ? 200 : 404,
+            });
+        },
     },
 };
 
@@ -70,8 +82,19 @@ test("keeps the canonical privacy and terms routes", async () => {
     assert.equal(await terms.text(), "/terms");
 });
 
-test("keeps automatic HTML canonicalization and protected asset routing", () => {
+test("does not expose the removed backlog", async () => {
+    for (const pathname of ["/backlog", "/backlog/", "/backlog/data/raw/probe.txt"]) {
+        const response = await worker.fetch(
+            new Request(`https://www.cruxcut.com${pathname}`),
+            env,
+        );
+
+        assert.equal(response.status, 404, pathname);
+        assert.equal(response.headers.get("www-authenticate"), null, pathname);
+    }
+});
+
+test("keeps automatic HTML canonicalization", () => {
     assert.match(config, /binding\s*=\s*"ASSETS"/);
     assert.match(config, /html_handling\s*=\s*"auto-trailing-slash"/);
-    assert.match(config, /run_worker_first\s*=.*"\/backlog\/\*"/);
 });

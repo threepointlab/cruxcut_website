@@ -5,11 +5,7 @@ node_modules/
 docs/
 src/
 tests/
-backlog/data/
-backlog/docs/
-backlog/supabase/
-backlog/*.md
-backlog/*.py
+backlog/
 .gitignore
 DESIGN.md
 config.example.js
