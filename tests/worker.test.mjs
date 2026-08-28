@@ -12,6 +12,7 @@ const publicAssetPaths = new Set([
     "/terms",
     "/guides/",
     "/guides/how-to-film-and-edit-climbing-videos",
+    "/guides/automatic-climbing-highlights",
 ]);
 
 const env = {
@@ -46,6 +47,28 @@ test("redirects the guide html filename to its canonical path", async () => {
         response.headers.get("location"),
         "https://www.cruxcut.com/guides/how-to-film-and-edit-climbing-videos",
     );
+});
+
+test("serves the automatic climbing highlights guide from its canonical path", async () => {
+    const guide = "/guides/automatic-climbing-highlights";
+    const response = await worker.fetch(
+        new Request(`https://www.cruxcut.com${guide}`),
+        env,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(await response.text(), guide);
+});
+
+test("redirects the highlights guide html filename to its canonical path", async () => {
+    const guide = "/guides/automatic-climbing-highlights";
+    const response = await worker.fetch(
+        new Request(`https://www.cruxcut.com${guide}.html`),
+        env,
+    );
+
+    assert.equal(response.status, 301);
+    assert.equal(response.headers.get("location"), `https://www.cruxcut.com${guide}`);
 });
 
 test("serves the public guides index", async () => {

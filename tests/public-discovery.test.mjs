@@ -18,12 +18,14 @@ test("includes the homepage and guide in sitemap.xml", async () => {
     const sitemap = await read("../sitemap.xml");
     assert.match(sitemap, /<loc>https:\/\/www\.cruxcut\.com\/<\/loc>/);
     assert.match(sitemap, /<loc>https:\/\/www\.cruxcut\.com\/guides\/how-to-film-and-edit-climbing-videos<\/loc>/);
+    assert.match(sitemap, /<loc>https:\/\/www\.cruxcut\.com\/guides\/automatic-climbing-highlights<\/loc>/);
 });
 
 test("links guide wordmarks back to the homepage", async () => {
     for (const path of [
         "../guides/index.html",
         "../guides/how-to-film-and-edit-climbing-videos.html",
+        "../guides/automatic-climbing-highlights.html",
     ]) {
         const html = await read(path);
         assert.match(html, /class="wordmark" href="\/"/);
