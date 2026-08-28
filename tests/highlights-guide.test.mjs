@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
-import {readFile} from "node:fs/promises";
+import {access, readFile} from "node:fs/promises";
 import test from "node:test";
+import {fileURLToPath} from "node:url";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -16,9 +17,21 @@ test("publishes an indexable US-English automatic highlights guide", async () =>
 
 test("shows product evidence and describes user-controlled highlight selection", async () => {
     const html = await read("../guides/automatic-climbing-highlights.html");
+    const pageUrl = new URL("../guides/automatic-climbing-highlights.html", import.meta.url);
+    const canonicalUrl = "https://www.cruxcut.com/guides/automatic-climbing-highlights";
+    const poster = html.match(/<video[^>]*poster="([^"]+)"[^>]*>/)?.[1];
+    const source = html.match(/<source src="([^"]+)" type="video\/mp4">/)?.[1];
+    const fallback = html.match(/<img src="([^"]+)" width="540" height="960"/)?.[1];
 
-    assert.match(html, /<video[^>]*poster="\/assets\/home\/highlights-poster\.jpg"[^>]*>/);
-    assert.match(html, /<source src="\/assets\/home\/highlights-proof\.mp4" type="video\/mp4">/);
+    assert.ok(poster);
+    assert.ok(source);
+    assert.ok(fallback);
+    for (const mediaUrl of [poster, source, fallback]) {
+        await access(fileURLToPath(new URL(mediaUrl, pageUrl)));
+    }
+    assert.equal(new URL(poster, canonicalUrl).pathname, "/assets/home/highlights-poster.jpg");
+    assert.equal(new URL(source, canonicalUrl).pathname, "/assets/home/highlights-proof.mp4");
+    assert.equal(new URL(fallback, canonicalUrl).pathname, "/assets/home/highlights-poster.jpg");
     assert.match(html, /CruxCut analyzes video on your iPhone/i);
     assert.match(html, /you choose the moments/i);
     assert.doesNotMatch(html, /uploads? (?:your )?raw (?:climbing )?footage/i);
