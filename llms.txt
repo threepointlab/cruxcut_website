@@ -18,5 +18,6 @@ Video analysis and editing happen on the user's iPhone. Raw climbing footage doe
 - App Store: https://apps.apple.com/app/apple-store/id6771268613
 - Climbing video guide: https://www.cruxcut.com/guides/how-to-film-and-edit-climbing-videos
 - Automatic climbing highlights guide: https://www.cruxcut.com/guides/automatic-climbing-highlights
+- Climbing video editor comparison: https://www.cruxcut.com/guides/climbing-video-editor-comparison
 - Privacy: https://www.cruxcut.com/privacy
 - Terms: https://www.cruxcut.com/terms
