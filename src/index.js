@@ -52,6 +52,15 @@ export default {
             return env.ASSETS.fetch(request);
         }
 
+        const comparisonGuide = "/guides/climbing-video-editor-comparison";
+        if (url.pathname === `${comparisonGuide}.html`) {
+            return Response.redirect(new URL(comparisonGuide, url), 301);
+        }
+
+        if (url.pathname === comparisonGuide) {
+            return env.ASSETS.fetch(request);
+        }
+
         if (url.pathname === "/admin" || url.pathname === "/admin/") {
             return env.ASSETS.fetch(new Request(new URL("/admin/", url), request));
         }
