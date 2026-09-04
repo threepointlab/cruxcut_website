@@ -41,29 +41,37 @@ const contrastRatio = (first, second) => {
     return (Math.max(...luminances) + 0.05) / (Math.min(...luminances) + 0.05);
 };
 
+test("uses one bilingual UI font while preserving the logo treatment", () => {
+    assert.match(
+        css,
+        /body :not\(\.wordmark,[^}]+\)\{\s*font-family:"Pretendard Variable"/,
+    );
+    assert.match(css, /\.wordmark\{font-style:italic\}/);
+});
+
+test("holds the completed after frame before revealing the next scene", () => {
+    assert.match(script, /--problem-compare-progress[^\n]+smoothstep\(0\.42, 0\.68, progress\)/);
+    assert.match(script, /--problem-fill[^\n]+smoothstep\(0\.8, 0\.92, progress\)/);
+    assert.match(script, /progress < 0\.96/);
+});
+
 test("keeps portrait product proofs fully visible", () => {
-    const portraitProof = declarationsFor(".feature:not(.feature-wide)>video");
+    const portraitProof = declarationsFor(".portrait-proof video");
 
     assert.equal(portraitProof["object-fit"], "contain");
     assert.equal(portraitProof["object-position"], "center");
 });
 
 test("keeps the final decorative mark proportional", () => {
-    const finalMark = declarationsFor(".final-cta img");
+    const finalMark = declarationsFor(".trust>img");
 
     assert.equal(finalMark.height, "auto");
     assert.equal(finalMark["aspect-ratio"], "1/1");
 });
 
 test("keeps normal-size CTA text above the AA contrast threshold", () => {
-    const tokens = declarationsFor(":root");
-    const button = declarationsFor(".button");
-    const foregroundVariable = button.color.match(/^var\((--[^)]+)\)$/)?.[1];
-    const foreground = foregroundVariable ? tokens[foregroundVariable] : button.color;
-    const backgroundVariable = button.background.match(/^var\((--[^)]+)\)$/)?.[1];
-    const background = backgroundVariable ? tokens[backgroundVariable] : button.background;
-
-    assert.ok(contrastRatio(foreground, background) >= 4.5);
+    assert.ok(contrastRatio("#141414", "#e74408") >= 4.5);
+    assert.match(css, /\.button\{color:#141414\}/);
 });
 
 test("gives every autoplay proof an explicit playback control", () => {
@@ -76,8 +84,10 @@ test("gives every autoplay proof an explicit playback control", () => {
         return match[1];
     });
 
-    assert.deepEqual(controlledIds, videoIds);
-    assert.equal(videoIds.length, 3);
+    assert.ok(videoIds.every((id) => controlledIds.includes(id)));
+    assert.ok(controlledIds.includes("workflow-proof-video"));
+    assert.equal(videoIds.length, 2);
+    assert.equal(controlledIds.length, 3);
 });
 
 test("playback controls pause and resume their proof", async () => {

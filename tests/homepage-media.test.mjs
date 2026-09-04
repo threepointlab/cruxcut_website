@@ -13,6 +13,11 @@ const budgets = new Map([
     ["../assets/home/followcam-poster.jpg", 700_000],
     ["../assets/home/highlights-poster.jpg", 700_000],
     ["../assets/home/route-sticker-poster.jpg", 700_000],
+    ["../assets/home/hero-main.png", 700_000],
+    ["../assets/home/app-home.png", 700_000],
+    ["../assets/home/app-select.png", 700_000],
+    ["../assets/home/app-edit.png", 700_000],
+    ["../assets/home/app-save.png", 700_000],
     ["../assets/home/og.png", 2_500_000],
 ]);
 

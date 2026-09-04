@@ -8,6 +8,7 @@ const workerUrl = `data:text/javascript;base64,${Buffer.from(source).toString("b
 const {default: worker} = await import(workerUrl);
 const publicAssetPaths = new Set([
     "/",
+    "/ko/",
     "/privacy",
     "/terms",
     "/guides/",
@@ -107,6 +108,16 @@ test("serves the product homepage from the root", async () => {
 
     assert.equal(response.status, 200);
     assert.equal(await response.text(), "/");
+});
+
+test("serves the Korean product homepage", async () => {
+    const response = await worker.fetch(
+        new Request("https://www.cruxcut.com/ko/"),
+        env,
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(await response.text(), "/ko/");
 });
 
 test("keeps the canonical privacy and terms routes", async () => {
