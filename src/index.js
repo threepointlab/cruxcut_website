@@ -6,6 +6,10 @@ export default {
             return env.ASSETS.fetch(request);
         }
 
+        if (url.pathname === "/ko" || url.pathname === "/ko/") {
+            return env.ASSETS.fetch(new Request(new URL("/ko/", url), request));
+        }
+
         if (url.pathname === "/en") {
             return Response.redirect(new URL("/en/privacy", url), 302);
         }
