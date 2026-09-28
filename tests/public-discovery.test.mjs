@@ -10,7 +10,7 @@ test("publishes canonical product facts in llms.txt", async () => {
     assert.match(text, /AI climbing video editor for iPhone/);
     assert.match(text, /AI Follow-cam/);
     assert.match(text, /Crux Highlights/);
-    assert.match(text, /Route Stickers/);
+    assert.match(text, /Path Stickers/);
     assert.match(text, /https:\/\/www\.cruxcut\.com\/privacy/);
 });
 

@@ -23,7 +23,7 @@ test("publishes canonical US-English homepage metadata", () => {
 test("presents exactly the approved three results", () => {
     assert.match(html, /id="follow-cam"/);
     assert.match(html, /id="highlights-title" class="feature-title">Crux Highlights<\/h2>/);
-    assert.match(html, /id="route-title" class="feature-title">Route Stickers<\/h2>/);
+    assert.match(html, /id="route-title" class="feature-title">Path Stickers<\/h2>/);
     assert.doesNotMatch(
         html,
         /<h[1-6][^>]*>\s*Move-by-move segmentation\s*<\/h[1-6]>/i,
@@ -50,7 +50,7 @@ test("keeps the English homepage aligned with the Korean source copy", () => {
     assert.match(html, /Video editing<br>for climbers/);
     assert.match(html, /More features/);
     assert.match(html, /What if the AI loses track of the climber\?/);
-    assert.match(html, /Everything runs on-device, keeping your videos completely private\./);
+    assert.match(html, /Tracking and highlights run on-device, so your videos stay private\./);
 });
 
 test("publishes parseable application and FAQ structured data", () => {
@@ -104,4 +104,16 @@ test("describes the current follow-cam and highlight proof media", () => {
         html,
         /aria-label="CruxCut highlight sharing flow on iPhone"/,
     );
+});
+
+
+test("leads with an on-device privacy section right after the hero in both languages", () => {
+  for (const page of [html, koreanHtml]) {
+    const hero = page.indexOf('<section class="hero');
+    const onDevice = page.indexOf('<section id="on-device"');
+    const problem = page.indexOf('<section class="problem');
+    assert.ok(hero >= 0 && onDevice > hero && onDevice < problem, "on-device section must sit between hero and problem");
+    assert.match(page, /22/);
+    assert.doesNotMatch(page, /100% 보장|completely private/);
+  }
 });

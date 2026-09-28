@@ -6,7 +6,7 @@ CruxCut is an AI climbing video editor for iPhone. It automatically follows the 
 
 - AI Follow-cam: turns fixed wide climbing footage into a tighter edit that follows the climber with automatic pan and zoom.
 - Crux Highlights: surfaces difficult and dynamic sections as short clips or multi-climb highlight reels.
-- Route Stickers: visualizes the climbing path with details such as grade and result for sharing as a workout record.
+- Path Stickers: visualizes the climbing path with details such as grade and result for sharing as a workout record.
 
 ## Processing and availability
 
