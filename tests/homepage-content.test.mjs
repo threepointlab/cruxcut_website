@@ -23,7 +23,7 @@ test("publishes canonical US-English homepage metadata", () => {
 test("presents exactly the approved three results", () => {
     assert.match(html, /id="follow-cam"/);
     assert.match(html, /id="highlights-title" class="feature-title">Crux Highlights<\/h2>/);
-    assert.match(html, /id="route-title" class="feature-title">Route Stickers<\/h2>/);
+    assert.match(html, /id="route-title" class="feature-title">Path Stickers<\/h2>/);
     assert.doesNotMatch(
         html,
         /<h[1-6][^>]*>\s*Move-by-move segmentation\s*<\/h[1-6]>/i,
