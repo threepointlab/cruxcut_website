@@ -13,7 +13,7 @@ for (const [file, lang, suffix, discord, soon, storeAlt] of [
  assert.ok(hero, 'hero CTA group exists');
  assert.equal((hero.match(/<a\b/g) || []).length, 3);
  assert.ok(hero.includes(`src="/assets/home/download-on-app-store${suffix}.svg"`));
- assert.ok(hero.includes(`src="/assets/home/google-play-badge${suffix}.svg"`));
+ assert.ok(hero.includes(`src="/assets/home/google-play-badge${suffix}.svg${lang === 'ko' ? '?v=ko-copy-1' : ''}"`));
  assert.ok(hero.includes(`alt="${storeAlt}"`));
  assert.ok(hero.includes(`href="/download/android?lang=${lang}"`));
  assert.ok(hero.includes(`data-play-label>${soon}</span>`));
@@ -49,4 +49,23 @@ test('keeps proportional store sizing and language-specific optical Discord size
 
 test('coming-soon state has no accidental link underline while remaining in the real anchor', () => {
  assert.match(css, /\.hero-store-ctas \.app-store-badge\{margin:0!important;text-decoration:none\}/);
+});
+
+test('Korean Play legibility treatment preserves every original outlined shape', async () => {
+ const {createHash} = await import('node:crypto');
+ const svg = await readFile(new URL('../assets/home/google-play-badge-ko.svg', import.meta.url), 'utf8');
+ const geometry = [...svg.matchAll(/<path\b[^>]*\bd="([^"]+)"/g)].map(m => m[1]).join('');
+ assert.equal(createHash('sha256').update(geometry).digest('hex'), 'b7032e9ee671f6e67c808c08b371507802f3f17daaf30555a021f9e1bbb77785');
+ assert.match(svg, /viewBox="0 0 239 70\.9"/);
+});
+
+test('only Korean copy gains weight, not the Google Play wordmark or color symbol', async () => {
+ const svg = await readFile(new URL('../assets/home/google-play-badge-ko.svg', import.meta.url), 'utf8');
+ const copyPaths = [...svg.matchAll(/<path class="st4 ko-copy" d="([^"]+)"/g)].map(m => m[1].match(/^M[\d.]+/)[0]);
+ assert.deepEqual(copyPaths, ['M78','M86.2','M193.7']);
+ assert.match(svg, /\.st4\{fill:#fff\}/);
+ assert.match(svg, /<path class="st4" d="M79\.8/);
+ const width = Number(svg.match(/\.ko-copy\{[^}]*stroke-width:([\d.]+)/)?.[1]);
+ assert.ok(width >= .6 && width <= 1, 'bounded weight avoids closed Hangul counters');
+ assert.match(svg, /stroke-linejoin:round;paint-order:stroke fill/);
 });
