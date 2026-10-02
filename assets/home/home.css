@@ -194,9 +194,11 @@ body :not(.wordmark,.wordmark *,.hero-wordmark,.hero-wordmark *,.route-sticker-w
 
 /* Three store/community entries keep download priority without a premature Play outbound. */
 .hero-store-ctas{display:flex;gap:12px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin-top:28px}
-.hero-store-ctas .app-store-badge{margin:0!important}
+.hero-store-ctas .app-store-badge{margin:0!important;text-decoration:none}
 .hero-store-ctas .app-store-badge img{height:54px;width:auto}
-.hero-discord{height:54px;min-height:54px;gap:10px;padding-inline:16px;border:1px solid #a6a6a6;border-radius:7px;background:#000;color:#fff;font-size:17px;font-weight:600;line-height:1.1;letter-spacing:-.02em;white-space:nowrap}
+.hero-discord{height:54px;min-height:54px;gap:10px;padding-inline:16px;border:1px solid #a6a6a6;border-radius:7px;background:#000;color:#fff;font-size:20px;font-weight:600;line-height:1.1;letter-spacing:-.02em;white-space:nowrap}
+/* Korean glyphs and localized store artwork need a smaller optical match. */
+html[lang="ko"] .hero-discord{font-size:17px}
 .hero-discord .discord-mark{width:32px;height:32px;flex:none;object-fit:contain}
 .hero-discord:focus-visible{outline:2px solid #fff;outline-offset:4px}
 .play-soon{display:block;margin-top:8px;font-size:12px;font-weight:650;line-height:1.3;text-align:center}
@@ -213,7 +215,8 @@ body :not(.wordmark,.wordmark *,.hero-wordmark,.hero-wordmark *,.route-sticker-w
 @media(max-width:600px){
   .hero-store-ctas{gap:10px;margin-top:24px}
   .hero-store-ctas .app-store-badge img{height:40px;width:auto}
-  .hero-store-ctas .hero-discord{width:auto;height:40px;min-height:40px;gap:8px;padding-inline:12px;border-radius:5px;font-size:13px;flex-basis:auto}
+  .hero-store-ctas .hero-discord{width:auto;height:40px;min-height:40px;gap:8px;padding-inline:12px;border-radius:5px;font-size:15px;flex-basis:auto}
+  html[lang="ko"] .hero-discord{font-size:13px}
   .hero-discord .discord-mark{width:26px;height:26px}
   .hero-store-ctas .play-soon{font-size:11px}
 }
