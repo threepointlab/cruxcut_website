@@ -1,3 +1,45 @@
+// Local canonical redirects must keep campaign tags and other query parameters intact.
+function canonicalRedirect(path, incoming, status) {
+    const destination = new URL(path, incoming);
+    destination.search = incoming.search;
+    return Response.redirect(destination, status);
+}
+// Keep these bounded enums in sync with assets/home/attribution-core.mjs.
+const ATTR_SOURCES = ['instagram','reddit','google','bing','duckduckgo','chatgpt','perplexity','claude','gemini','copilot','other_referral','direct_or_unknown','other_campaign'];
+const ATTR_CAMPAIGNS = ['bio','story','community','website','launch','qa','other','none'];
+export function attributedPlayURL(url) {
+    const source = url.searchParams.get('source'); const campaign = url.searchParams.get('campaign');
+    if (!ATTR_SOURCES.includes(source) || !ATTR_CAMPAIGNS.includes(campaign)) return PLAY_URL;
+    const target = new URL(PLAY_URL);
+    target.searchParams.set('referrer',new URLSearchParams({utm_source:source,utm_campaign:campaign,utm_medium:'website'}).toString());
+    return target.href;
+}
+export async function attributionEvent(request, env) {
+    const headers = {'Cache-Control':'no-store'};
+    const reply = status => new Response(null,{status,headers});
+    if (request.method !== 'POST') return new Response(null,{status:405,headers:{...headers,Allow:'POST'}});
+    const origin = new URL(request.url).origin;
+    const supplied = request.headers.get('Origin');
+    let referOrigin; try { referOrigin = new URL(request.headers.get('Referer')).origin; } catch {}
+    if ((supplied && supplied !== origin) || (!supplied && referOrigin !== origin) || (referOrigin && referOrigin !== origin) || request.headers.get('Sec-Fetch-Site') === 'cross-site') return reply(403);
+    if (request.headers.get('Sec-GPC') === '1' || request.headers.get('DNT') === '1' || /bot|crawler|spider|headless|slurp|facebookexternalhit|preview/i.test(request.headers.get('User-Agent') || '')) return reply(204);
+    if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) return reply(415);
+    if (Number(request.headers.get('Content-Length')) > 2048) return reply(413);
+    // Read a bounded stream, not an unbounded request.text().
+    const reader = request.body?.getReader(); if (!reader) return reply(400);
+    let length = 0; const parts = [];
+    while (true) { const {done,value} = await reader.read(); if(done) break; length += value.byteLength; if(length > 2048) { await reader.cancel(); return reply(413); } parts.push(value); }
+    const bytes = new Uint8Array(length); let offset=0; for(const part of parts) { bytes.set(part,offset); offset += part.length; }
+    let data; try { data = JSON.parse(new TextDecoder().decode(bytes)); } catch { return reply(400); }
+    const fields = ['v','event','source','campaign','method','page','target','placement'];
+    if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length !== fields.length || Object.keys(data).some(k => !fields.includes(k)) || data.v !== 1 || !['pageview','click'].includes(data.event) || !ATTR_SOURCES.includes(data.source) || !ATTR_CAMPAIGNS.includes(data.campaign) || !['utm','referrer','none'].includes(data.method) || !['home_en','home_ko','guides','android','other'].includes(data.page) || !['none','appstore','googleplay','discord'].includes(data.target) || !['none','hero','nav','final','community','footer','dialog'].includes(data.placement)) return reply(400);
+    if (data.event === 'pageview' ? data.target !== 'none' || data.placement !== 'none' : data.target === 'none' || data.placement === 'none') return reply(400);
+    if (!env.WEB_ANALYTICS || typeof env.WEB_ANALYTICS.writeDataPoint !== 'function') return reply(503);
+    try {
+        env.WEB_ANALYTICS.writeDataPoint({indexes:['web_v1'],blobs:['v1',data.event,data.source,data.method,data.campaign,data.page,data.target,data.placement],doubles:[1]});
+        return reply(204);
+    } catch { return reply(503); }
+}
 const PLAY_PACKAGE = "com.threepointlab.cruxcut";
 const PLAY_URL = `https://play.google.com/store/apps/details?id=${PLAY_PACKAGE}`;
 const STATUS_TTL = 120;
@@ -46,18 +88,19 @@ async function playStatus(request, env) {
 }
 
 function comingSoonPage(ko) {
-    return `<!doctype html><html lang="${ko ? "ko" : "en"}"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${ko ? "Android 출시 준비 중" : "Android coming soon"} · CruxCut</title><link rel="stylesheet" href="/assets/home/home.css?v=play-entry-1"><main class="android-fallback section-shell"><p class="eyebrow">CruxCut · Android</p><h1>${ko ? "Android 버전은 곧 만나요" : "Android is coming soon"}</h1><p>${ko ? "Google Play 출시를 준비 중이에요. Discord에서 업데이트 소식을 확인하세요." : "We’re getting ready for Google Play. Follow updates in Discord."}</p><a class="button community-button" href="https://discord.gg/phFRhaWCU5">${ko ? "Discord 참여하기" : "Join the Discord"}</a><p><a href="${ko ? "/ko/" : "/"}">${ko ? "홈으로 돌아가기" : "Back to home"}</a></p></main></html>`;
+    return `<!doctype html><html lang="${ko ? "ko" : "en"}"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${ko ? "Android 출시 준비 중" : "Android coming soon"} · CruxCut</title><link rel="stylesheet" href="/assets/home/home.css?v=play-entry-1"><script src="/assets/home/attribution.js" defer></script><main class="android-fallback section-shell"><p class="eyebrow">CruxCut · Android</p><h1>${ko ? "Android 버전은 곧 만나요" : "Android is coming soon"}</h1><p>${ko ? "Google Play 출시를 준비 중이에요. Discord에서 업데이트 소식을 확인하세요." : "We’re getting ready for Google Play. Follow updates in Discord."}</p><a class="button community-button" href="https://discord.gg/phFRhaWCU5">${ko ? "Discord 참여하기" : "Join the Discord"}</a><p><a href="${ko ? "/ko/" : "/"}">${ko ? "홈으로 돌아가기" : "Back to home"}</a></p></main></html>`;
 }
 
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
+        if (url.pathname === '/api/attribution-event') return attributionEvent(request, env);
 
         if (url.pathname === "/api/play-availability" || url.pathname === "/download/android") {
             if (request.method !== "GET" && request.method !== "HEAD") return new Response("Method not allowed", {status:405, headers:{Allow:"GET, HEAD"}});
             const status = await playStatus(request, env);
             if (url.pathname === "/api/play-availability") return Response.json({...status, url: status.available ? PLAY_URL : null}, {headers:{"Cache-Control":"no-store"}});
-            if (status.available) return new Response(null, {status:302, headers:{Location:PLAY_URL, "Cache-Control":"no-store"}});
+            if (status.available) return new Response(null, {status:302, headers:{Location:request.headers.get("Sec-GPC") === "1" || request.headers.get("DNT") === "1" ? PLAY_URL : attributedPlayURL(url), "Cache-Control":"no-store"}});
             return new Response(comingSoonPage(url.searchParams.get("lang") === "ko"), {headers:{"Content-Type":"text/html; charset=utf-8", "Cache-Control":"no-store"}});
         }
 
@@ -70,7 +113,7 @@ export default {
         }
 
         if (url.pathname === "/en") {
-            return Response.redirect(new URL("/en/privacy", url), 302);
+            return canonicalRedirect("/en/privacy", url, 302);
         }
 
         if (url.pathname === "/privacy") {
@@ -99,7 +142,7 @@ export default {
 
         const climbingVideoGuide = "/guides/how-to-film-and-edit-climbing-videos";
         if (url.pathname === `${climbingVideoGuide}.html`) {
-            return Response.redirect(new URL(climbingVideoGuide, url), 301);
+            return canonicalRedirect(climbingVideoGuide, url, 301);
         }
 
         if (url.pathname === climbingVideoGuide) {
@@ -108,7 +151,7 @@ export default {
 
         const highlightsGuide = "/guides/automatic-climbing-highlights";
         if (url.pathname === `${highlightsGuide}.html`) {
-            return Response.redirect(new URL(highlightsGuide, url), 301);
+            return canonicalRedirect(highlightsGuide, url, 301);
         }
 
         if (url.pathname === highlightsGuide) {
@@ -117,7 +160,7 @@ export default {
 
         const comparisonGuide = "/guides/climbing-video-editor-comparison";
         if (url.pathname === `${comparisonGuide}.html`) {
-            return Response.redirect(new URL(comparisonGuide, url), 301);
+            return canonicalRedirect(comparisonGuide, url, 301);
         }
 
         if (url.pathname === comparisonGuide) {

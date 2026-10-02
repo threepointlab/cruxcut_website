@@ -41,7 +41,7 @@
     link.removeAttribute('aria-busy');
     if (live) {
       setLiveLabels();
-      window.location.assign('https://play.google.com/store/apps/details?id=com.threepointlab.cruxcut');
+      window.location.assign(window.cruxcutAttribution?.playURL() || 'https://play.google.com/store/apps/details?id=com.threepointlab.cruxcut');
     } else { dialog.showModal(); }
   }));
   status().then(live => { if (live) setLiveLabels(); });

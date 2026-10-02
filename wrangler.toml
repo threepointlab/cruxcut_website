@@ -6,4 +6,8 @@ compatibility_date = "2026-06-13"
 directory = "."
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
-run_worker_first = ["/api/play-availability", "/download/android", "/", "/en", "/en/*", "/privacy", "/terms", "/loading", "/guides", "/guides/*", "/admin", "/admin/*", "/mindmap"]
+run_worker_first = ["/api/play-availability", "/download/android", "/api/attribution-event", "/", "/en", "/en/*", "/privacy", "/terms", "/loading", "/guides", "/guides/*", "/admin", "/admin/*", "/mindmap"]
+
+[[analytics_engine_datasets]]
+binding = "WEB_ANALYTICS"
+dataset = "cruxcut_web_attribution"
