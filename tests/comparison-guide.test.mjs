@@ -8,7 +8,7 @@ test("publishes an indexable US-English climbing video editor comparison", async
     const html = await read("../guides/climbing-video-editor-comparison.html");
 
     assert.match(html, /<html lang="en">/);
-    assert.match(html, /<title>Best Climbing Video Editors for iPhone: Honest Comparison · cruxcut<\/title>/);
+    assert.match(html, /<title>Best Climbing Video Editors for iPhone: Honest Comparison · CruxCut<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.cruxcut\.com\/guides\/climbing-video-editor-comparison">/);
     assert.match(html, /<h1>Best Climbing Video Editors for iPhone: Honest Comparison<\/h1>/);
     for (const product of ["CruxCut", "BoulderCam", "CapCut", "Splice"]) {

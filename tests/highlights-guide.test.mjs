@@ -9,7 +9,7 @@ test("publishes an indexable US-English automatic highlights guide", async () =>
     const html = await read("../guides/automatic-climbing-highlights.html");
 
     assert.match(html, /<html lang="en">/);
-    assert.match(html, /<title>How to Automatically Create Climbing Highlights on iPhone · cruxcut<\/title>/);
+    assert.match(html, /<title>How to Automatically Create Climbing Highlights on iPhone · CruxCut<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.cruxcut\.com\/guides\/automatic-climbing-highlights">/);
     assert.match(html, /<meta name="description" content="[^"]*climbing highlights[^"]*iPhone[^"]*">/i);
     assert.match(html, /<h1>How to Automatically Create Climbing Highlights on iPhone<\/h1>/);

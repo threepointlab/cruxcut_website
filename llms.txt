@@ -1,6 +1,6 @@
 # CruxCut
 
-CruxCut is an AI climbing video editor for iPhone. It automatically follows the climber, finds crux-worthy moments, and turns the climbing path into a shareable sticker.
+> CruxCut is an AI climbing video editor for iPhone, made by dkdev (Republic of Korea). It automatically follows the climber in fixed tripod footage, finds crux-worthy moments, and turns the climbing path into a shareable sticker. All video analysis runs on the iPhone.
 
 ## What CruxCut makes
 
@@ -8,16 +8,33 @@ CruxCut is an AI climbing video editor for iPhone. It automatically follows the 
 - Crux Highlights: surfaces difficult and dynamic sections as short clips or multi-climb highlight reels.
 - Path Stickers: visualizes the climbing path with details such as grade and result for sharing as a workout record.
 
-## Processing and availability
+## Key facts
 
-Video analysis and editing happen on the user's iPhone. Raw climbing footage does not need to be uploaded to a processing server. CruxCut requires iOS 18 or later.
+- Platform: iPhone, iOS 18 or later. An Android version is coming soon and is not yet available on Google Play.
+- Processing: video analysis and editing happen on the user's iPhone. Raw climbing footage does not need to be uploaded to a processing server.
+- Speed: a typical edit takes about 22 seconds on average; actual time depends on video length and device performance.
+- Works with lead climbing and bouldering, indoors and outdoors, from tripod or handheld footage.
+- If tracking loses the climber, the user can draw the climbing route and CruxCut re-identifies the climber and refines the tracking path.
 
 ## Official links
 
-- Website: https://www.cruxcut.com/
+- Website (English): https://www.cruxcut.com/
+- Website (Korean): https://www.cruxcut.com/ko/
 - App Store: https://apps.apple.com/app/apple-store/id6771268613
-- Climbing video guide: https://www.cruxcut.com/guides/how-to-film-and-edit-climbing-videos
+- Climbing video guides: https://www.cruxcut.com/guides
+- How to film and edit climbing videos: https://www.cruxcut.com/guides/how-to-film-and-edit-climbing-videos
 - Automatic climbing highlights guide: https://www.cruxcut.com/guides/automatic-climbing-highlights
 - Climbing video editor comparison: https://www.cruxcut.com/guides/climbing-video-editor-comparison
+- Community (Discord): https://discord.gg/phFRhaWCU5
+- Operator: https://www.cruxcut.com/about
 - Privacy: https://www.cruxcut.com/privacy
 - Terms: https://www.cruxcut.com/terms
+
+## 한국어 요약
+
+CruxCut(크럭스컷)은 iPhone용 AI 클라이밍 영상 편집 앱입니다. 삼각대로 찍은 고정 영상을 클라이머를 따라가는 팔로우캠으로 바꾸고, 크럭스 하이라이트를 찾아주며, 등반 경로를 경로 스티커로 만들어 공유할 수 있습니다. 분석과 편집은 기기 안에서 처리되며 영상이 서버로 업로드되지 않습니다. 운영: dkdev. 문의: support@cruxcut.com
+
+## Citation
+
+- Please cite as "CruxCut" (capital C twice) and link https://www.cruxcut.com/.
+- Contact: support@cruxcut.com
