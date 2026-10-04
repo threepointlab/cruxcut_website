@@ -91,8 +91,22 @@ function comingSoonPage(ko) {
     return `<!doctype html><html lang="${ko ? "ko" : "en"}"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${ko ? "Android 출시 준비 중" : "Android coming soon"} · CruxCut</title><link rel="stylesheet" href="/assets/home/home.css?v=play-entry-1"><script src="/assets/home/attribution.js" defer></script><main class="android-fallback section-shell"><p class="eyebrow">CruxCut · Android</p><h1>${ko ? "Android 버전은 곧 만나요" : "Android is coming soon"}</h1><p>${ko ? "Google Play 출시를 준비 중이에요. Discord에서 업데이트 소식을 확인하세요." : "We’re getting ready for Google Play. Follow updates in Discord."}</p><a class="button community-button" href="https://discord.gg/phFRhaWCU5">${ko ? "Discord 참여하기" : "Join the Discord"}</a><p><a href="${ko ? "/ko/" : "/"}">${ko ? "홈으로 돌아가기" : "Back to home"}</a></p></main></html>`;
 }
 
+const NOINDEX_PATHS = /^\/(admin(\/.*)?|mindmap|loading|download\/android|api\/.*)$/;
+
+function withNoindex(response) {
+    const headers = new Headers(response.headers);
+    headers.set("X-Robots-Tag", "noindex, nofollow");
+    return new Response(response.body, {status: response.status, statusText: response.statusText, headers});
+}
+
 export default {
     async fetch(request, env) {
+        const response = await route(request, env);
+        return NOINDEX_PATHS.test(new URL(request.url).pathname) ? withNoindex(response) : response;
+    },
+};
+
+async function route(request, env) {
         const url = new URL(request.url);
         if (url.pathname === '/api/attribution-event') return attributionEvent(request, env);
 
@@ -176,5 +190,4 @@ export default {
         }
 
         return env.ASSETS.fetch(request);
-    },
-};
+}

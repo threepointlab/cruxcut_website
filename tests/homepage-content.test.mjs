@@ -16,7 +16,7 @@ test("publishes canonical US-English homepage metadata", () => {
     assert.match(html, /<html lang="en">/);
     assert.match(html, /<title>CruxCut — AI Follow-Cam Editor for Climbers<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.cruxcut\.com\/">/);
-    assert.match(html, /<meta name="description" content="Turn static climbing footage into a smooth AI follow-cam\./);
+    assert.match(html, /<meta name="description" content="CruxCut is an AI climbing video editor for iPhone\. Turn fixed tripod footage into a smooth follow-cam/);
     assert.match(html, /<meta property="og:title" content="CruxCut — AI Follow-Cam Editor for Climbers">/);
 });
 
