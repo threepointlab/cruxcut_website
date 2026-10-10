@@ -56,7 +56,7 @@ export function inspectPlayListing(html, finalUrl, releaseVerified = false) {
     const canonical = [...html.matchAll(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["'][^>]*>/gi)].some(([, value]) => {
         try { const u = new URL(value.replace(/&amp;/g, "&")); return u.hostname === "play.google.com" && u.pathname === "/store/apps/details" && u.searchParams.get("id") === PLAY_PACKAGE; } catch { return false; }
     });
-    const identified = apps.some(app => app["@type"] === "SoftwareApplication" && /^CruxCut(?:\s|$)/i.test(app.name || "") && (canonical || (app.url || app["@id"] || "").includes(`/store/apps/details?id=${PLAY_PACKAGE}`)));
+    const identified = apps.some(app => app["@type"] === "SoftwareApplication" && /(?:^|[\s:])CruxCut(?:\s|$)/i.test(app.name || "") && (canonical || (app.url || app["@id"] || "").includes(`/store/apps/details?id=${PLAY_PACKAGE}`)));
     if (!identified || /pre[-\s]?register|pre[-\s]?registration|coming soon/i.test(html.replace(/<script\b[\s\S]*?<\/script>/gi, ""))) return false;
     const installButton = [...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/gi)].some(([, attrs, text]) => {
         if (/\bdisabled\b|aria-disabled=["']true["']/i.test(attrs)) return false;
