@@ -14,6 +14,11 @@ test('only correct app and explicit install evidence open automatic gate', () =>
   assert.equal(inspectPlayListing(live,url.replace('com.threepointlab.cruxcut','wrong.package')),false);
   assert.equal(inspectPlayListing(live+'<button>Pre-register</button>',url),false);
 });
+test('real Play title "AI Climb Video Editor: CruxCut" is recognized', () => {
+  const real = live.replace('"name":"CruxCut"', '"name":"AI Climb Video Editor: CruxCut"');
+  assert.equal(inspectPlayListing(real,url),true);
+  assert.equal(inspectPlayListing(real.replace('AI Climb Video Editor: CruxCut','Not CruxCutter App'),url),false);
+});
 test('prelaunch/live/ambiguous/failed probes fail closed', async()=>{
   assert.equal((await probePlayAvailability('en',{},async()=>({ok:false}))).available,false);
   assert.equal((await probePlayAvailability('en',{},async()=>response(live))).available,true);
