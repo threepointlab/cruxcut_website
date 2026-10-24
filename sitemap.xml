@@ -16,11 +16,11 @@
   </url>
   <url>
     <loc>https://www.cruxcut.com/guides</loc>
-    <lastmod>2026-10-04</lastmod>
+    <lastmod>2026-10-24</lastmod>
   </url>
   <url>
     <loc>https://www.cruxcut.com/guides/how-to-film-and-edit-climbing-videos</loc>
-    <lastmod>2026-08-26</lastmod>
+    <lastmod>2026-10-24</lastmod>
   </url>
   <url>
     <loc>https://www.cruxcut.com/guides/automatic-climbing-highlights</loc>
@@ -38,4 +38,8 @@
   <url><loc>https://www.cruxcut.com/terms</loc></url>
   <url><loc>https://www.cruxcut.com/en/privacy</loc></url>
   <url><loc>https://www.cruxcut.com/en/terms</loc></url>
+  <url>
+    <loc>https://www.cruxcut.com/guides/climbing-video-tracking-problems</loc>
+    <lastmod>2026-10-24</lastmod>
+  </url>
 </urlset>
