@@ -13,3 +13,6 @@ wrangler.toml
 design-audit
 design-qa.md
 scripts/
+
+# Exclude both a repository directory and a linked-worktree pointer file.
+.git
