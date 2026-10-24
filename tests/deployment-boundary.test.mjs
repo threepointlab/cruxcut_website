@@ -9,3 +9,8 @@ test("keeps deleted backlog paths outside future asset uploads", () => {
     assert.match(assetsIgnore, /^backlog\/$/m);
     assert.doesNotMatch(gitIgnore, /^backlog(?:\/|$)/m);
 });
+
+test("excludes both git directories and linked-worktree pointer files from assets", () => {
+    assert.match(assetsIgnore, /^\.git\/$/m);
+    assert.match(assetsIgnore, /^\.git$/m);
+});
