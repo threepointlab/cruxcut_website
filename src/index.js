@@ -172,6 +172,14 @@ async function route(request, env) {
             return env.ASSETS.fetch(request);
         }
 
+        const trackingGuide = "/guides/climbing-video-tracking-problems";
+        if (url.pathname === `${trackingGuide}.html`) {
+            return canonicalRedirect(trackingGuide, url, 301);
+        }
+        if (url.pathname === trackingGuide) {
+            return env.ASSETS.fetch(request);
+        }
+
         const comparisonGuide = "/guides/climbing-video-editor-comparison";
         if (url.pathname === `${comparisonGuide}.html`) {
             return canonicalRedirect(comparisonGuide, url, 301);
