@@ -172,6 +172,10 @@ async function route(request, env) {
             return env.ASSETS.fetch(request);
         }
 
+        const betaReviewGuide = "/guides/how-to-review-climbing-videos-for-beta";
+        if (url.pathname === `${betaReviewGuide}.html`) return canonicalRedirect(betaReviewGuide, url, 301);
+        if (url.pathname === betaReviewGuide) return env.ASSETS.fetch(request);
+
         const trackingGuide = "/guides/climbing-video-tracking-problems";
         if (url.pathname === `${trackingGuide}.html`) {
             return canonicalRedirect(trackingGuide, url, 301);

@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import test from 'node:test';
+import worker from '../src/index.js';
+const read=p=>readFile(new URL(p,import.meta.url),'utf8');
+const slug='/guides/how-to-review-climbing-videos-for-beta',url='https://www.cruxcut.com'+slug;
+test('beta review guide is unique, indexable and accurately dated',async()=>{const h=await read('..'+slug+'.html');assert.equal((h.match(/<h1>/g)||[]).length,1);assert.ok(h.includes(`<link rel="canonical" href="${url}">`));assert.match(h,/name="viewport"/);assert.doesNotMatch(h,/noindex|guaranteed|Android is live|side-by-side feature/i);const ld=JSON.parse(h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(ld['@graph'][0].datePublished,'2026-10-29');assert.equal(ld['@graph'][0].mainEntityOfPage,url);assert.match(h,/does not replace safe climbing practice/);assert.match(h,/your editor does not need a split-screen feature/);});
+test('beta guide appears in navigation and discovery without stale modified dates',async()=>{for(const p of ['../guides/index.html','../sitemap.xml','../llms.txt'])assert.ok((await read(p)).includes(slug));const index=await read('../guides/index.html');const ld=JSON.parse(index.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(ld.mainEntity.itemListElement[0].url,url);assert.equal(ld.mainEntity.itemListElement.length,5);});
+test('beta guide HTML canonical redirect retains campaign data',async()=>{const env={ASSETS:{fetch:async r=>new Response(new URL(r.url).pathname)}};const r=await worker.fetch(new Request(url+'.html?utm_source=test'),env);assert.equal(r.status,301);assert.equal(r.headers.get('location'),url+'?utm_source=test');const h=await worker.fetch(new Request(url),env);assert.equal(h.status,200);assert.equal(h.headers.get('x-robots-tag'),null);});
