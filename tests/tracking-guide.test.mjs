@@ -30,7 +30,7 @@ test('tracking recovery claim is grounded in existing public product wording',as
 });
 test('discovery links and sitemap include the new page with honest modified dates',async()=>{
  for(const p of ['../guides/index.html','../guides/how-to-film-and-edit-climbing-videos.html','../sitemap.xml','../llms.txt'])assert.ok((await read(p)).includes(slug),p);
- const index=await read('../guides/index.html');const list=blocks(index).find(x=>x['@type']==='CollectionPage').mainEntity.itemListElement;assert.ok(list.some(x=>x.url===url));assert.deepEqual(list.map(x=>x.position),[1,2,3,4,5]);
+ const index=await read('../guides/index.html');const list=blocks(index).find(x=>x['@type']==='CollectionPage').mainEntity.itemListElement;assert.ok(list.some(x=>x.url===url));assert.deepEqual(list.map(x=>x.position),[1,2,3,4,5,6]);
  const map=await read('../sitemap.xml');assert.ok(map.includes(`<loc>${url}</loc>\n    <lastmod>2026-10-24</lastmod>`));
  assert.match(map,/<loc>https:\/\/www\.cruxcut\.com\/<\/loc>\s*<lastmod>2026-10-04<\/lastmod>/);
 });
