@@ -47,3 +47,17 @@ test("internal tools are marked noindex while public pages are not", async () =>
         assert.equal(res.headers.get("X-Robots-Tag"), null, path);
     }
 });
+
+test('Android release is indexable in both locales without claiming parity', async()=>{
+ for(const file of ['../index.html','../ko/index.html']){
+  const html=await read(file);assert.match(html,/<title>[^<]*iPhone[^<]*Android/);
+  assert.match(html,/hreflang="x-default" href="https:\/\/www.cruxcut.com\/"/);
+  assert.doesNotMatch(html,/Coming soon|출시 예정|Android is coming soon/);
+  assert.match(html,/id="download"/);assert.match(html,/href="#download"/);
+  assert.match(html,/Google Play · Android<\/a>/);
+ }
+ const html=await read('../index.html');const app=ldBlocks(html)[0]['@graph'].find(x=>x['@type']==='SoftwareApplication');
+ assert.deepEqual(app.operatingSystem,['iOS 18.0 or later','Android']);
+ assert.ok(app.downloadUrl.includes('https://play.google.com/store/apps/details?id=com.threepointlab.cruxcut'));
+ assert.equal(app.aggregateRating,undefined);assert.equal(app.offers,undefined);
+});

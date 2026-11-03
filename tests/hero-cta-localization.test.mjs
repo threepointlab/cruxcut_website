@@ -4,8 +4,8 @@ import test from 'node:test';
 
 const css = await readFile(new URL('../assets/home/home.css', import.meta.url), 'utf8');
 for (const [file, lang, suffix, discord, soon, storeAlt] of [
- ['../index.html','en','','Join the Discord','Coming soon','Download on the App Store'],
- ['../ko/index.html','ko','-ko','Discord 참여하기','출시 예정','App Store에서 다운로드하기'],
+ ['../index.html','en','','Join the Discord','Android','Download on the App Store'],
+ ['../ko/index.html','ko','-ko','Discord 참여하기','Android','App Store에서 다운로드하기'],
 ]) test(`${lang} hero uses real localized badge artwork, names and Android fallback`, async () => {
  const html = await readFile(new URL(file, import.meta.url), 'utf8');
  assert.ok(html.includes(`<html lang="${lang}">`));
