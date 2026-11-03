@@ -32,7 +32,7 @@ test('discovery links and sitemap include the new page with honest modified date
  for(const p of ['../guides/index.html','../guides/how-to-film-and-edit-climbing-videos.html','../sitemap.xml','../llms.txt'])assert.ok((await read(p)).includes(slug),p);
  const index=await read('../guides/index.html');const list=blocks(index).find(x=>x['@type']==='CollectionPage').mainEntity.itemListElement;assert.ok(list.some(x=>x.url===url));assert.deepEqual(list.map(x=>x.position),[1,2,3,4,5,6,7,8,9]);
  const map=await read('../sitemap.xml');assert.ok(map.includes(`<loc>${url}</loc>\n    <lastmod>2026-10-24</lastmod>`));
- assert.match(map,/<loc>https:\/\/www\.cruxcut\.com\/<\/loc>\s*<lastmod>2026-10-04<\/lastmod>/);
+ assert.match(map,/<loc>https:\/\/www\.cruxcut\.com\/<\/loc>\s*<lastmod>2026-11-03<\/lastmod>/);
 });
 test('canonical article redirect preserves campaigns and article is indexable',async()=>{
  const env={ASSETS:{fetch:async r=>new Response(new URL(r.url).pathname,{headers:{'Content-Type':'text/html'}})}};
