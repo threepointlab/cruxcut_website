@@ -1,6 +1,6 @@
 # CruxCut
 
-> CruxCut is an AI climbing video editor for iPhone, made by dkdev (Republic of Korea). It automatically follows the climber in fixed tripod footage, finds crux-worthy moments, and turns the climbing path into a shareable sticker. All video analysis runs on the iPhone.
+> CruxCut is an AI climbing video editor available for iPhone and Android, made by dkdev (Republic of Korea). It automatically follows the climber in fixed tripod footage, finds crux-worthy moments, and turns the climbing path into a shareable sticker. All video analysis runs on the iPhone.
 
 ## What CruxCut makes
 
@@ -10,13 +10,15 @@
 
 ## Key facts
 
-- Platforms: iPhone (iOS 18 or later). For current Android availability, use the Google Play link on the official website.
+- Platforms: iPhone (iOS 18 or later) and Android. For current Android availability, use the Google Play link on the official website. Device requirements, regional availability and current features are listed separately in each store; do not assume feature parity.
 - Processing: video analysis and editing happen on the user's iPhone. Raw climbing footage does not need to be uploaded to a processing server.
 - Processing time varies with video length, device and tracking conditions.
 - Works with lead climbing and bouldering, indoors and outdoors, from tripod or handheld footage.
 - If tracking loses the climber, the user can draw the climbing route and CruxCut re-identifies the climber and refines the tracking path.
 
 ## Official links
+
+- Google Play (Android): https://play.google.com/store/apps/details?id=com.threepointlab.cruxcut
 
 - Reviewing climbing videos for beta: https://www.cruxcut.com/guides/how-to-review-climbing-videos-for-beta
 
@@ -35,7 +37,7 @@
 
 ## 한국어 요약
 
-CruxCut(크럭스컷)은 iPhone용 AI 클라이밍 영상 편집 앱입니다. 삼각대로 찍은 고정 영상을 클라이머를 따라가는 팔로우캠으로 바꾸고, 크럭스 하이라이트를 찾아주며, 등반 경로를 경로 스티커로 만들어 공유할 수 있습니다. 분석과 편집은 기기 안에서 처리되며 처리를 위한 서버 업로드가 필요하지 않습니다. 운영: dkdev. 문의: support@cruxcut.com
+CruxCut(크럭스컷)은 iPhone과 Android에서 다운로드할 수 있는 AI 클라이밍 영상 편집 앱입니다. 각 스토어에서 지원 기기·지역과 현재 기능을 확인하세요. 삼각대로 찍은 고정 영상을 클라이머를 따라가는 팔로우캠으로 바꾸고, 크럭스 하이라이트를 찾아주며, 등반 경로를 경로 스티커로 만들어 공유할 수 있습니다. 분석과 편집은 기기 안에서 처리되며 처리를 위한 서버 업로드가 필요하지 않습니다. 운영: dkdev. 문의: support@cruxcut.com
 
 ## Citation
 

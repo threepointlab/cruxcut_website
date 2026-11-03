@@ -7,7 +7,7 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 test("publishes canonical product facts in llms.txt", async () => {
     const text = await read("../llms.txt");
     assert.match(text, /^# CruxCut$/m);
-    assert.match(text, /AI climbing video editor for iPhone/);
+    assert.match(text, /AI climbing video editor available for iPhone and Android/);
     assert.match(text, /AI Follow-cam/);
     assert.match(text, /Crux Highlights/);
     assert.match(text, /Path Stickers/);

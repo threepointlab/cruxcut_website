@@ -42,3 +42,14 @@ blindly force an outbound. No new secret or console access is required by this g
    remains closed, use the constrained release switch only after verification.
 
 No push, merge or deployment was performed during implementation.
+
+## Public availability SEO update (2026-11-03)
+
+Anonymous US and KR exact-package listings expose Install and SoftwareApplication
+identity; the deployed API returns available in both locales. Static homepage
+availability, FAQ/schema and metadata now reflect iPhone and Android release.
+The runtime gate, regional probing and exact-package checks remain unchanged.
+A failed probe now says the store connection could not be verified, not that the
+app is unreleased, with an explicit Play listing link for device/region checks.
+No feature parity, new version, SDK deployment or performance claim is added.
+Today's guide already exists; this update adds no article.

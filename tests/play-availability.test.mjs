@@ -30,10 +30,10 @@ test('verified release switch cannot bypass identity or preregistration',()=>{
   assert.equal(inspectPlayListing('<html>200</html>',url,true),false);
   assert.equal(inspectPlayListing(identity+'<button>Pre-register</button>',url,true),false);
 });
-test('every homepage Play CTA has server fallback and localized soon label',async()=>{
+test('every homepage Play CTA keeps gated fallback after public release',async()=>{
  for(const file of ['../index.html','../ko/index.html']){
   const html=await readFile(new URL(file,import.meta.url),'utf8');
-  assert.doesNotMatch(html,/href="https:\/\/play.google.com/);
+  assert.doesNotMatch(html.match(/<section class="hero[\s\S]*?<\/section>/)[0],/href="https:\/\/play.google.com/);
   assert.equal((html.match(/data-play-cta/g)||[]).length,2);
   assert.equal((html.match(/data-play-label/g)||[]).length,2);
   assert.match(html,/<dialog[^>]*aria-labelledby="play-dialog-title" aria-describedby="play-dialog-description"/);
@@ -56,11 +56,11 @@ test('API and no-JS route agree for prelaunch, live and failed probes',async()=>
    assert.equal((await api.json()).available,available);
    const fallback=await worker.fetch(new Request('https://www.cruxcut.com/download/android?lang=ko'),{});
    if(available){assert.equal(fallback.status,302);assert.equal(fallback.headers.get('location'),url)}
-   else{assert.equal(fallback.status,200);assert.match(await fallback.text(),/Android 버전은 곧 만나요/)}
+   else{assert.equal(fallback.status,200);assert.match(await fallback.text(),/Google Play에서 확인해 주세요/)}
   }
   globalThis.fetch=async()=>{throw Error('Network')};
   const fallback=await worker.fetch(new Request('https://www.cruxcut.com/download/android'),{});
-  assert.match(await fallback.text(),/Android is coming soon/);
+  assert.match(await fallback.text(),/Check availability on Google Play/);
  }finally{globalThis.fetch=original}
 });
 

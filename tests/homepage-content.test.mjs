@@ -14,10 +14,10 @@ const jsonLdBlocks = [...html.matchAll(
 
 test("publishes canonical US-English homepage metadata", () => {
     assert.match(html, /<html lang="en">/);
-    assert.match(html, /<title>CruxCut — AI Follow-Cam Editor for Climbers<\/title>/);
+    assert.match(html, /<title>CruxCut — Climbing Video Editor for iPhone & Android<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.cruxcut\.com\/">/);
-    assert.match(html, /<meta name="description" content="CruxCut is an AI climbing video editor for iPhone\. Turn fixed tripod footage into a smooth follow-cam/);
-    assert.match(html, /<meta property="og:title" content="CruxCut — AI Follow-Cam Editor for Climbers">/);
+    assert.match(html, /<meta name="description" content="CruxCut is an AI climbing video editor for iPhone and Android\. Turn fixed climbing footage into a follow-cam edit/);
+    assert.match(html, /<meta property="og:title" content="CruxCut — Climbing Video Editor for iPhone & Android">/);
 });
 
 test("presents exactly the approved three results", () => {
