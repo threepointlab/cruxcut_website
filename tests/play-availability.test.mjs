@@ -34,8 +34,13 @@ test('every homepage Play CTA keeps gated fallback after public release',async()
  for(const file of ['../index.html','../ko/index.html']){
   const html=await readFile(new URL(file,import.meta.url),'utf8');
   assert.doesNotMatch(html.match(/<section class="hero[\s\S]*?<\/section>/)[0],/href="https:\/\/play.google.com/);
-  assert.equal((html.match(/data-play-cta/g)||[]).length,2);
-  assert.equal((html.match(/data-play-label/g)||[]).length,2);
+  // Arm A keeps its two original Play CTAs; arm B templates add more. Every Play CTA must keep the
+  // gated /download/android fallback and carry the label play-entry.js hides once the listing is live.
+  const ctas=[...html.matchAll(/<a [^>]*data-play-cta[^>]*>[\s\S]*?<\/a>/g)].map(m=>m[0]);
+  assert.ok(ctas.length>=2);
+  for(const a of ctas){assert.match(a,/href="\/download\/android\?lang=(en|ko)"/);assert.match(a,/data-play-label/);}
+  const controlOnly=html.replace(/<template>[\s\S]*?<\/template>/g,'');
+  assert.equal((controlOnly.match(/data-play-cta/g)||[]).length,2);
   assert.match(html,/<dialog[^>]*aria-labelledby="play-dialog-title" aria-describedby="play-dialog-description"/);
   assert.match(html,/class="button hero-discord" href="https:\/\/discord.gg\/phFRhaWCU5"/);
  }

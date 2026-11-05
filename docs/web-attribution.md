@@ -43,3 +43,32 @@ Do not put usernames/emails/IDs into tracking URLs. These examples measure sourc
 Node fixtures exercise hostile domains, AI/search, absent referrer, UTM priority/persistence/expiry, bounded store links, all click placements, bad origin, missing binding, bot/optout and PII rejection. Browser mocks/local binding writes prove integration only, not remote durable ingestion. Before claiming production persistence: deploy with approval, confirm binding in that deployment, make a real same-origin browser visit/click with a test source, wait for ingestion, query private Analytics Engine SQL and verify blob order/counts. Confirm no identifiers/full URL in rows, optout produces no row, and store redirect keeps its attribution. A 204 only confirms writeDataPoint accepted locally; Analytics Engine ingestion is asynchronous. Dataset creation alone does not prove any event exists.
 
 Reserved `utm_campaign=qa` is supported for deployment verification. Exclude campaign qa from real performance reports (`AND blob5 != 'qa'`). It contains no individual identifier.
+
+# v2 events and the home_v2 A/B test (2026-11-05)
+
+## Assignment
+EN/KO homepages run `home_v2`: arm `a` is the original page, arm `b` adds the hook hero, the auto zoom in/out section, platform-matched store CTAs, the direct sticky "Get the app" button and scroll/press motion (one bundled treatment; results cannot attribute lift to a single element). An inline head script assigns 50/50 with `Math.random()` and keeps only the arm letter in `localStorage["cruxcut_exp_home_v2"]` (no ID, no cookie). Known bot user agents and blocked storage get arm `a`. `?exp=a|b` forces and stores an arm for QA; `?platform=ios|android|desktop` previews the platform CTA. Arm B content lives in inert `<template>` elements, so crawlers and no-JS readers get arm A.
+
+## Payload v2
+`{v:2,event,source,campaign,method,page,target,placement,exp,arm,platform}`. v1 payloads remain accepted for cached clients.
+- event: pageview | click | cta_view | scroll
+- click placement: hero, nav, final, community, footer, dialog, sticky, zoom (explicit `data-cta-placement` wins over DOM ancestry)
+- cta_view placement: hero, zoom, final (once per page load when 50% of the CTA group is visible)
+- scroll placement: d25, d50, d75, d100 (once each per page load, home only)
+- exp: none | home_v2; arm: none | a | b (both none or both set); platform: ios | android | desktop | other (coarse UA class)
+
+Write schema: index1 `web_v2`; blob1 v2, blob2 event, blob3 source, blob4 method, blob5 campaign, blob6 page, blob7 target, blob8 placement, blob9 exp, blob10 arm, blob11 platform; double1 = 1.
+
+## Readout (private Analytics Engine SQL, needs an Account Analytics read token)
+```sql
+SELECT blob10 AS arm, blob11 AS platform,
+  SUM(IF(blob2 = 'pageview', _sample_interval * double1, 0)) AS pageviews,
+  SUM(IF(blob2 = 'click' AND blob7 IN ('appstore','googleplay'), _sample_interval * double1, 0)) AS store_clicks,
+  SUM(IF(blob2 = 'click' AND blob7 = 'appstore', _sample_interval * double1, 0)) AS appstore_clicks,
+  SUM(IF(blob2 = 'click' AND blob7 = 'googleplay', _sample_interval * double1, 0)) AS play_clicks,
+  SUM(IF(blob2 = 'scroll' AND blob8 = 'd50', _sample_interval * double1, 0)) AS reached_half
+FROM cruxcut_web_attribution
+WHERE index1 = 'web_v2' AND blob9 = 'home_v2' AND blob5 != 'qa' AND timestamp > toDateTime('2026-11-06 00:00:00')
+GROUP BY arm, platform ORDER BY arm, platform
+```
+Primary metric: store_clicks / pageviews per arm (page-load based, not unique visitors; a click is store intent, not an install). Guardrails: d50 scroll reach, cta_view per placement. Compare arms only within the same period; treat small counts directionally.

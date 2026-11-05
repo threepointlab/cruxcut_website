@@ -1,0 +1,66 @@
+/* home_v2 experiment (arm B) and platform-aware store CTAs. Arm A renders the original page. */
+html[data-exp="b"] .exp-a{display:none!important}
+html:not([data-platform="ios"]) .exp-only-ios{display:none!important}
+html:not([data-platform="android"]) .exp-only-android{display:none!important}
+html:not([data-platform="desktop"]) .exp-only-desktop{display:none!important}
+
+/* Store badges: phones see the one store that fits; desktops see both. */
+.exp-store-ctas{display:flex;gap:12px;justify-content:center;align-items:flex-start;flex-wrap:wrap;margin-top:26px}
+.exp-store-ctas .app-store-badge{display:inline-block!important;margin:0!important;text-decoration:none}
+.exp-store-ctas img{height:56px;width:auto}
+html[data-platform="ios"] .exp-store-ctas .exp-badge-android,html[data-platform="android"] .exp-store-ctas .exp-badge-ios{display:none!important}
+html[data-platform="ios"] .exp-store-ctas img,html[data-platform="android"] .exp-store-ctas img{height:60px}
+.exp-sticky{display:flex;justify-self:end}
+
+/* Hero B */
+.hero-copy-b .hero-kicker{display:inline-block;margin:0 0 20px;padding:7px 14px;border-radius:999px;background:#111;color:#fff;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.hero-copy-b .hero-dek{max-width:560px}
+.hero-copy-b .exp-other{margin:12px 0 0;font-size:14px;color:rgba(17,17,17,.74)}
+.hero-copy-b .exp-other a{font-weight:780;text-underline-offset:4px}
+.hero-copy-b .hero-trust{margin:14px 0 0;font-size:13px;font-weight:650;color:rgba(17,17,17,.7)}
+.hero-copy-b .hero-sub-link{display:inline-flex;gap:6px;margin-top:18px;padding-bottom:2px;border-bottom:2px solid currentColor;color:#111;font-size:14px;font-weight:780;text-decoration:none}
+.hero-copy-b .hero-sub-link span{display:inline-block;animation:expNudge 1.8s ease-in-out infinite}
+@keyframes expNudge{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+/* Auto zoom section (B only) */
+.az{position:relative;background:var(--night,#0d0f0e);color:var(--chalk,#f3efe6);padding-block:110px;overflow:hidden}
+.az::before{content:"";position:absolute;inset:-20% -10% auto auto;width:60vw;height:60vw;border-radius:50%;background:radial-gradient(closest-side,rgba(231,68,8,.22),transparent);pointer-events:none}
+.az-inner{position:relative;display:grid;grid-template-columns:.92fr 1.08fr;gap:64px;align-items:center}
+.az-copy .eyebrow{color:var(--orange,#e74408)}
+.az-copy h2{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(42px,4.3vw,64px);font-weight:400;line-height:.95;letter-spacing:-.055em}
+.az-lede{max-width:470px;margin:24px 0 0;color:#b9b6ad;font-size:17px}
+.az-lede strong{color:#fff}
+.az-points{display:grid;gap:10px;margin:26px 0 0;padding:0;list-style:none}
+.az-points li{position:relative;padding-left:26px;font-size:15px;font-weight:650}
+.az-points li::before{content:"";position:absolute;left:4px;top:.55em;width:9px;height:9px;border-radius:50%;background:var(--orange,#e74408);box-shadow:0 0 0 4px rgba(231,68,8,.18)}
+.az .exp-store-ctas{justify-content:flex-start}
+.az-stage{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end}
+.az-panel{position:relative;margin:0;overflow:hidden;border-radius:22px;background:#050605;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.az-panel video{width:100%;aspect-ratio:9/16;object-fit:cover}
+.az-panel figcaption{position:absolute;left:12px;top:12px;padding:6px 10px;border-radius:999px;background:rgba(8,8,8,.72);color:#fff;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.az-out{transform:translateY(-32px)}
+.az-out figcaption{background:var(--orange,#e74408)}
+.az-zoom-chip{position:absolute;right:12px;bottom:12px;padding:6px 9px;border-radius:8px;background:rgba(231,68,8,.92);color:#fff;font:800 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;animation:expZoomChip 2.4s ease-in-out infinite}
+@keyframes expZoomChip{0%,100%{transform:scale(1);opacity:.82}50%{transform:scale(1.1);opacity:1}}
+.az-note{grid-column:1/-1;margin:6px 0 0;color:#77766f;font-size:12px}
+@media(max-width:900px){.az-inner{grid-template-columns:1fr;gap:42px}.az-copy{text-align:center}.az-lede{margin-inline:auto}.az-points{justify-items:center}.az .exp-store-ctas{justify-content:center}.az-note{text-align:center}}
+@media(max-width:600px){.hero-scroll .hero-copy-b{padding-top:24px}.hero-copy-b h1{font-size:clamp(40px,11.2vw,52px)!important;line-height:.98!important}.hero-copy-b .hero-kicker{margin-bottom:16px;font-size:11px}.hero-copy-b .hero-dek{margin:18px auto}.exp-store-ctas img{height:48px}html[data-platform="ios"] .exp-store-ctas img,html[data-platform="android"] .exp-store-ctas img{height:58px}.az{padding-block:78px}.az-stage{gap:10px}.az-panel{border-radius:16px}.az-out{transform:translateY(-18px)}.az-copy h2{font-size:clamp(42px,11.5vw,54px)}.az-lede{font-size:16px}}
+
+/* Final CTA B */
+.exp-final .exp-store-ctas{justify-content:center;margin-top:0}
+.exp-final-trust{margin:16px 0 0;font-size:14px;font-weight:650}
+
+/* Motion (B only, JS-enabled, motion allowed) */
+html.exp-motion [data-reveal]{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1);transition-delay:var(--reveal-delay,0ms)}
+html.exp-motion [data-reveal].is-revealed{opacity:1;transform:none}
+html.exp-motion .az-out[data-reveal].is-revealed,html.exp-motion .az-stage.is-revealed .az-out{transform:translateY(-32px)}
+html[data-exp="b"] .app-store-badge,html[data-exp="b"] .button{transition:transform .18s cubic-bezier(.22,1,.36,1),filter .18s ease}
+html[data-exp="b"] .app-store-badge:hover{transform:translateY(-3px)}
+html[data-exp="b"] .app-store-badge:active,html[data-exp="b"] .button:active,html[data-exp="b"] .is-pressed{transform:scale(.95)!important}
+.exp-cta-glow img{animation:expCtaGlow 1.5s ease-out 2}
+@keyframes expCtaGlow{0%,100%{filter:drop-shadow(0 0 0 rgba(255,255,255,0))}45%{filter:drop-shadow(0 0 16px rgba(255,255,255,.85))}}
+.exp-sticky .button.exp-attn{animation:expAttn 1.2s ease-in-out 2}
+@keyframes expAttn{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.exp-progress{position:fixed;z-index:60;top:0;left:0;width:100%;height:3px;background:var(--orange,#e74408);transform:scaleX(var(--exp-progress,0));transform-origin:0 50%;pointer-events:none}
+@media(prefers-reduced-motion:reduce){html.exp-motion [data-reveal]{opacity:1;transform:none;transition:none}.az-zoom-chip,.exp-cta-glow img,.exp-sticky .button.exp-attn,.hero-copy-b .hero-sub-link span{animation:none}.exp-progress{display:none}}
+.exp-final .exp-store-ctas img{height:56px!important;width:auto!important;max-width:none;aspect-ratio:auto!important}html[data-platform="ios"] .exp-final .exp-store-ctas img,html[data-platform="android"] .exp-final .exp-store-ctas img{height:60px!important}

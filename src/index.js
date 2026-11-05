@@ -31,12 +31,23 @@ export async function attributionEvent(request, env) {
     while (true) { const {done,value} = await reader.read(); if(done) break; length += value.byteLength; if(length > 2048) { await reader.cancel(); return reply(413); } parts.push(value); }
     const bytes = new Uint8Array(length); let offset=0; for(const part of parts) { bytes.set(part,offset); offset += part.length; }
     let data; try { data = JSON.parse(new TextDecoder().decode(bytes)); } catch { return reply(400); }
-    const fields = ['v','event','source','campaign','method','page','target','placement'];
-    if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length !== fields.length || Object.keys(data).some(k => !fields.includes(k)) || data.v !== 1 || !['pageview','click'].includes(data.event) || !ATTR_SOURCES.includes(data.source) || !ATTR_CAMPAIGNS.includes(data.campaign) || !['utm','referrer','none'].includes(data.method) || !['home_en','home_ko','guides','android','other'].includes(data.page) || !['none','appstore','googleplay','discord'].includes(data.target) || !['none','hero','nav','final','community','footer','dialog'].includes(data.placement)) return reply(400);
-    if (data.event === 'pageview' ? data.target !== 'none' || data.placement !== 'none' : data.target === 'none' || data.placement === 'none') return reply(400);
+    const v1Fields = ['v','event','source','campaign','method','page','target','placement'];
+    const v2Fields = [...v1Fields,'exp','arm','platform'];
+    if (!data || typeof data !== 'object' || Array.isArray(data) || ![1,2].includes(data.v)) return reply(400);
+    const fields = data.v === 2 ? v2Fields : v1Fields;
+    const events = data.v === 2 ? ['pageview','click','cta_view','scroll'] : ['pageview','click'];
+    const clickPlacements = data.v === 2 ? ['hero','nav','final','community','footer','dialog','sticky','zoom'] : ['hero','nav','final','community','footer','dialog'];
+    if (Object.keys(data).length !== fields.length || Object.keys(data).some(k => !fields.includes(k)) || !events.includes(data.event) || !ATTR_SOURCES.includes(data.source) || !ATTR_CAMPAIGNS.includes(data.campaign) || !['utm','referrer','none'].includes(data.method) || !['home_en','home_ko','guides','android','other'].includes(data.page) || !['none','appstore','googleplay','discord'].includes(data.target)) return reply(400);
+    if (data.v === 2 && (!['none','home_v2'].includes(data.exp) || !['none','a','b'].includes(data.arm) || (data.exp === 'none') !== (data.arm === 'none') || !['ios','android','desktop','other'].includes(data.platform))) return reply(400);
+    const placementOk = data.event === 'pageview' ? data.target === 'none' && data.placement === 'none'
+        : data.event === 'click' ? data.target !== 'none' && clickPlacements.includes(data.placement)
+        : data.event === 'cta_view' ? data.target === 'none' && ['hero','zoom','final'].includes(data.placement)
+        : data.target === 'none' && ['d25','d50','d75','d100'].includes(data.placement);
+    if (!placementOk) return reply(400);
     if (!env.WEB_ANALYTICS || typeof env.WEB_ANALYTICS.writeDataPoint !== 'function') return reply(503);
     try {
-        env.WEB_ANALYTICS.writeDataPoint({indexes:['web_v1'],blobs:['v1',data.event,data.source,data.method,data.campaign,data.page,data.target,data.placement],doubles:[1]});
+        if (data.v === 2) env.WEB_ANALYTICS.writeDataPoint({indexes:['web_v2'],blobs:['v2',data.event,data.source,data.method,data.campaign,data.page,data.target,data.placement,data.exp,data.arm,data.platform],doubles:[1]});
+        else env.WEB_ANALYTICS.writeDataPoint({indexes:['web_v1'],blobs:['v1',data.event,data.source,data.method,data.campaign,data.page,data.target,data.placement],doubles:[1]});
         return reply(204);
     } catch { return reply(503); }
 }
