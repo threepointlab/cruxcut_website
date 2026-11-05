@@ -43,10 +43,12 @@ if (isKorean && carouselEyebrow && carouselTitle) {
   carouselEyebrow.textContent = "어떤 등반이라도, 어떤 환경이라도 정확하게 추적";
   carouselTitle.innerHTML = "리드부터 볼더링까지<br>실내도 야외도";
 }
-// Safari plays HLS natively; everyone else needs hls.js.
+// Apple WebKit (Safari, every iOS browser) plays HLS natively. Other browsers use hls.js even when they
+// report native HLS support, because their native ABR starts at the lowest rendition for these short loops.
+const preferNativeHls = /Apple/.test(globalThis.navigator?.vendor || "");
 const hlsVideos = [...document.querySelectorAll("video")]
   .map((video) => [video, video.querySelector?.("source")?.src])
-  .filter(([video, src]) => src?.endsWith(".m3u8") && !video.canPlayType?.("application/vnd.apple.mpegurl"));
+  .filter(([video, src]) => src?.endsWith(".m3u8") && !(preferNativeHls && video.canPlayType?.("application/vnd.apple.mpegurl")));
 if (hlsVideos.length) {
   import("https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.6.14/hls.mjs")
     .then(({default: Hls}) => {
@@ -60,8 +62,8 @@ if (hlsVideos.length) {
           hls.startLevel = index === -1 ? hls.levels.length - 1 : index;
           hls.startLoad();
         });
-        // cdn.cruxcut.com has no CORS policy; hls.js fetches through the same-origin /hls/ proxy instead.
-        hls.loadSource(src.replace("https://cdn.cruxcut.com/hls/", "/hls/"));
+        // cdn.cruxcut.com allows CORS GET/HEAD from cruxcut.com origins.
+        hls.loadSource(src);
         hls.attachMedia(video);
       });
     })
