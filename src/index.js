@@ -126,8 +126,24 @@ export default {
     },
 };
 
+const HLS_PATH = /^\/hls\/[a-z0-9_-]+\/[a-z0-9_.-]+\.(m3u8|ts)$/;
+const HLS_TYPES = {m3u8: "application/vnd.apple.mpegurl", ts: "video/mp2t"};
+
+// Homepage HLS renditions live in the R2 bucket "cruxcut"; serving them same-origin avoids CORS for hls.js.
+async function hlsMedia(request, env, url) {
+    if (request.method !== "GET" && request.method !== "HEAD") return new Response("Method not allowed", {status: 405, headers: {Allow: "GET, HEAD"}});
+    const match = HLS_PATH.exec(url.pathname);
+    if (!match || !env.MEDIA) return new Response("Not found", {status: 404});
+    const object = request.method === "HEAD" ? await env.MEDIA.head(url.pathname.slice(1)) : await env.MEDIA.get(url.pathname.slice(1));
+    if (!object) return new Response("Not found", {status: 404});
+    const headers = new Headers({"Content-Type": HLS_TYPES[match[1]], "Cache-Control": "public, max-age=86400", "ETag": object.httpEtag, "Access-Control-Allow-Origin": "*"});
+    if (typeof object.size === "number") headers.set("Content-Length", String(object.size));
+    return new Response(request.method === "HEAD" ? null : object.body, {headers});
+}
+
 async function route(request, env) {
         const url = new URL(request.url);
+        if (url.pathname.startsWith("/hls/")) return hlsMedia(request, env, url);
         if (url.pathname === '/api/attribution-event') return attributionEvent(request, env);
 
         if (url.pathname === "/api/play-availability" || url.pathname === "/download/android") {

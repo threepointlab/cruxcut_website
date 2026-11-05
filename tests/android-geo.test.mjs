@@ -61,3 +61,26 @@ test("worker adds security headers and serves a noindex 404 page", async () => {
     const direct = await worker.fetch(new Request("https://www.cruxcut.com/404"), env);
     assert.match(direct.headers.get("X-Robots-Tag"), /noindex/);
 });
+
+test("homepage HLS videos are served same-origin from R2", async () => {
+    for (const p of ["../index.html", "../ko/index.html", "../assets/home/home.js"]) {
+        const text = await read(p);
+        assert.doesNotMatch(text, /workers\.dev\/hls/, p);
+        assert.match(text, /src="\/hls\/[a-z0-9_-]+\/master\.m3u8"/, p);
+    }
+    const store = {"hls/lead/master.m3u8": "#EXTM3U", "hls/lead/segment-2-1.ts": "TS"};
+    const MEDIA = {
+        get: async (k) => (k in store ? {body: store[k], httpEtag: '"e"', size: store[k].length} : null),
+        head: async (k) => (k in store ? {httpEtag: '"e"', size: store[k].length} : null),
+    };
+    const env = {MEDIA, ASSETS: {fetch: async () => new Response("nf", {status: 404})}};
+    const m = await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/master.m3u8"), env);
+    assert.equal(m.status, 200);
+    assert.equal(m.headers.get("Content-Type"), "application/vnd.apple.mpegurl");
+    assert.equal(await m.text(), "#EXTM3U");
+    const ts = await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/segment-2-1.ts"), env);
+    assert.equal(ts.headers.get("Content-Type"), "video/mp2t");
+    assert.equal((await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/nope.m3u8"), env)).status, 404);
+    assert.equal((await worker.fetch(new Request("https://www.cruxcut.com/hls/../wrangler.toml"), env)).status, 404);
+    assert.equal((await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/master.m3u8", {method: "POST"}), env)).status, 405);
+});
