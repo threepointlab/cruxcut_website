@@ -66,14 +66,12 @@ test("homepage HLS videos are served same-origin from R2", async () => {
     for (const p of ["../index.html", "../ko/index.html", "../assets/home/home.js"]) {
         const text = await read(p);
         assert.doesNotMatch(text, /workers\.dev\/hls/, p);
-        assert.match(text, /src="\/hls\/[a-z0-9_-]+\/master\.m3u8"/, p);
+        assert.match(text, /src="https:\/\/cdn\.cruxcut\.com\/hls\/[a-z0-9_-]+\/master\.m3u8"/, p);
     }
-    const store = {"hls/lead/master.m3u8": "#EXTM3U", "hls/lead/segment-2-1.ts": "TS"};
-    const MEDIA = {
-        get: async (k) => (k in store ? {body: store[k], httpEtag: '"e"', size: store[k].length} : null),
-        head: async (k) => (k in store ? {httpEtag: '"e"', size: store[k].length} : null),
-    };
-    const env = {MEDIA, ASSETS: {fetch: async () => new Response("nf", {status: 404})}};
+    const store = {"/hls/lead/master.m3u8": "#EXTM3U", "/hls/lead/segment-2-1.ts": "TS"};
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = async (u) => { const k = new URL(u).pathname; assert.equal(new URL(u).origin, "https://cdn.cruxcut.com"); return k in store ? new Response(store[k], {headers: {ETag: '"e"'}}) : new Response("nf", {status: 404}); };
+    const env = {ASSETS: {fetch: async () => new Response("nf", {status: 404})}};
     const m = await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/master.m3u8"), env);
     assert.equal(m.status, 200);
     assert.equal(m.headers.get("Content-Type"), "application/vnd.apple.mpegurl");
@@ -83,4 +81,5 @@ test("homepage HLS videos are served same-origin from R2", async () => {
     assert.equal((await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/nope.m3u8"), env)).status, 404);
     assert.equal((await worker.fetch(new Request("https://www.cruxcut.com/hls/../wrangler.toml"), env)).status, 404);
     assert.equal((await worker.fetch(new Request("https://www.cruxcut.com/hls/lead/master.m3u8", {method: "POST"}), env)).status, 405);
+    globalThis.fetch = realFetch;
 });

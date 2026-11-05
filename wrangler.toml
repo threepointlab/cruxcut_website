@@ -11,7 +11,3 @@ run_worker_first = ["/api/play-availability", "/download/android", "/api/attribu
 [[analytics_engine_datasets]]
 binding = "WEB_ANALYTICS"
 dataset = "cruxcut_web_attribution"
-
-[[r2_buckets]]
-binding = "MEDIA"
-bucket_name = "cruxcut"

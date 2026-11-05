@@ -129,16 +129,18 @@ export default {
 const HLS_PATH = /^\/hls\/[a-z0-9_-]+\/[a-z0-9_.-]+\.(m3u8|ts)$/;
 const HLS_TYPES = {m3u8: "application/vnd.apple.mpegurl", ts: "video/mp2t"};
 
-// Homepage HLS renditions live in the R2 bucket "cruxcut"; serving them same-origin avoids CORS for hls.js.
+// Homepage HLS renditions live in the R2 bucket "cruxcut" (public at cdn.cruxcut.com).
+// Proxy them same-origin through the edge cache so hls.js needs no CORS and native players stay fast.
+const HLS_ORIGIN = "https://cdn.cruxcut.com";
 async function hlsMedia(request, env, url) {
     if (request.method !== "GET" && request.method !== "HEAD") return new Response("Method not allowed", {status: 405, headers: {Allow: "GET, HEAD"}});
     const match = HLS_PATH.exec(url.pathname);
-    if (!match || !env.MEDIA) return new Response("Not found", {status: 404});
-    const object = request.method === "HEAD" ? await env.MEDIA.head(url.pathname.slice(1)) : await env.MEDIA.get(url.pathname.slice(1));
-    if (!object) return new Response("Not found", {status: 404});
-    const headers = new Headers({"Content-Type": HLS_TYPES[match[1]], "Cache-Control": "public, max-age=86400", "ETag": object.httpEtag, "Access-Control-Allow-Origin": "*"});
-    if (typeof object.size === "number") headers.set("Content-Length", String(object.size));
-    return new Response(request.method === "HEAD" ? null : object.body, {headers});
+    if (!match) return new Response("Not found", {status: 404});
+    const upstream = await fetch(HLS_ORIGIN + url.pathname, {method: request.method, cf: {cacheEverything: true, cacheTtl: 86400}});
+    if (!upstream.ok) return new Response("Not found", {status: 404});
+    const headers = new Headers({"Content-Type": HLS_TYPES[match[1]], "Cache-Control": "public, max-age=86400", "Access-Control-Allow-Origin": "*"});
+    for (const name of ["Content-Length", "ETag", "Last-Modified"]) if (upstream.headers.get(name)) headers.set(name, upstream.headers.get(name));
+    return new Response(request.method === "HEAD" ? null : upstream.body, {headers});
 }
 
 async function route(request, env) {
