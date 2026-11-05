@@ -32,7 +32,7 @@ test('discovery links and sitemap include the new page with honest modified date
  for(const p of ['../guides/index.html','../guides/how-to-film-and-edit-climbing-videos.html','../sitemap.xml','../llms.txt'])assert.ok((await read(p)).includes(slug),p);
  const index=await read('../guides/index.html');const list=blocks(index).find(x=>x['@type']==='CollectionPage').mainEntity.itemListElement;assert.ok(list.some(x=>x.url===url));assert.deepEqual(list.map(x=>x.position),[1,2,3,4,5,6,7,8,9,10,11]);
  const map=await read('../sitemap.xml');assert.ok(map.includes(`<loc>${url}</loc>\n    <lastmod>2026-10-24</lastmod>`));
- assert.match(map,/<loc>https:\/\/www\.cruxcut\.com\/<\/loc>\s*<lastmod>2026-11-03<\/lastmod>/);
+ assert.match(map,/<loc>https:\/\/www\.cruxcut\.com\/<\/loc>\s*<lastmod>2026-11-05<\/lastmod>/);
 });
 test('canonical article redirect preserves campaigns and article is indexable',async()=>{
  const env={ASSETS:{fetch:async r=>new Response(new URL(r.url).pathname,{headers:{'Content-Type':'text/html'}})}};
@@ -43,7 +43,7 @@ test('canonical article redirect preserves campaigns and article is indexable',a
 test('machine-readable facts avoid stale Android and unqualified processing-speed claims',async()=>{
  const llms=await read('../llms.txt');
  assert.doesNotMatch(llms,/Android version is coming soon|not yet available on Google Play|22 seconds/);
- assert.match(llms,/For current Android availability, use the Google Play link on the official website/);
+ assert.match(llms,/\[CruxCut on Google Play\]\(https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.threepointlab\.cruxcut\)/);
  assert.match(llms,/Processing time varies with video length, device and tracking conditions/);
  assert.match(llms,/does not need to be uploaded to a processing server/);
 });

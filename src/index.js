@@ -91,18 +91,38 @@ function comingSoonPage(ko) {
     return `<!doctype html><html lang="${ko ? "ko" : "en"}"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${ko ? "Google Play 이용 가능 여부" : "Google Play availability"} · CruxCut</title><link rel="stylesheet" href="/assets/home/home.css?v=play-entry-1"><script src="/assets/home/attribution.js" defer></script><main class="android-fallback section-shell"><p class="eyebrow">CruxCut · Android</p><h1>${ko ? "Google Play에서 확인해 주세요" : "Check availability on Google Play"}</h1><p>${ko ? "지금은 스토어 연결을 확인할 수 없어요. 지원 기기와 지역을 Google Play에서 직접 확인하세요." : "We could not verify the store connection right now. Check Google Play for supported devices and regions."}</p><a class="button" href="${PLAY_URL}">${ko ? "Google Play 확인하기" : "View on Google Play"}</a><a class="button community-button" href="https://discord.gg/phFRhaWCU5">${ko ? "Discord 참여하기" : "Join the Discord"}</a><p><a href="${ko ? "/ko/" : "/"}">${ko ? "홈으로 돌아가기" : "Back to home"}</a></p></main></html>`;
 }
 
-const NOINDEX_PATHS = /^\/(admin(\/.*)?|mindmap|loading|download\/android|api\/.*)$/;
+const NOINDEX_PATHS = /^\/(404(\.html)?|admin(\/.*)?|mindmap|loading|download\/android|api\/.*)$/;
 
-function withNoindex(response) {
+const SECURITY_HEADERS = {
+    "Strict-Transport-Security": "max-age=31536000",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+};
+
+function finalize(response, noindex) {
+    if (response.status === 101) return response;
     const headers = new Headers(response.headers);
-    headers.set("X-Robots-Tag", "noindex, nofollow");
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) if (!headers.has(name)) headers.set(name, value);
+    if (noindex) headers.set("X-Robots-Tag", "noindex, nofollow");
     return new Response(response.body, {status: response.status, statusText: response.statusText, headers});
+}
+
+async function notFoundPage(request, env, response) {
+    if (response.status !== 404 || !["GET", "HEAD"].includes(request.method) || !(request.headers.get("Accept") || "").includes("text/html")) return response;
+    const page = await env.ASSETS.fetch(new Request(new URL("/404", request.url), {method: "GET"}));
+    if (!page.ok) return response;
+    const headers = new Headers(page.headers);
+    headers.set("Content-Type", "text/html; charset=utf-8");
+    headers.set("X-Robots-Tag", "noindex");
+    headers.set("Cache-Control", "no-store");
+    return new Response(request.method === "HEAD" ? null : page.body, {status: 404, headers});
 }
 
 export default {
     async fetch(request, env) {
-        const response = await route(request, env);
-        return NOINDEX_PATHS.test(new URL(request.url).pathname) ? withNoindex(response) : response;
+        const response = await notFoundPage(request, env, await route(request, env));
+        return finalize(response, NOINDEX_PATHS.test(new URL(request.url).pathname));
     },
 };
 

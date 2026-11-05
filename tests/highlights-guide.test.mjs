@@ -9,10 +9,10 @@ test("publishes an indexable US-English automatic highlights guide", async () =>
     const html = await read("../guides/automatic-climbing-highlights.html");
 
     assert.match(html, /<html lang="en">/);
-    assert.match(html, /<title>How to Automatically Create Climbing Highlights on iPhone · CruxCut<\/title>/);
+    assert.match(html, /<title>How to Automatically Create Climbing Highlights on iPhone and Android · CruxCut<\/title>/);
     assert.match(html, /<link rel="canonical" href="https:\/\/www\.cruxcut\.com\/guides\/automatic-climbing-highlights">/);
     assert.match(html, /<meta name="description" content="[^"]*climbing highlights[^"]*iPhone[^"]*">/i);
-    assert.match(html, /<h1>How to Automatically Create Climbing Highlights on iPhone<\/h1>/);
+    assert.match(html, /<h1>How to Automatically Create Climbing Highlights on iPhone and Android<\/h1>/);
 });
 
 test("shows product evidence and describes user-controlled highlight selection", async () => {
@@ -32,7 +32,7 @@ test("shows product evidence and describes user-controlled highlight selection",
     assert.equal(new URL(poster, canonicalUrl).pathname, "/assets/home/highlights-poster.jpg");
     assert.equal(new URL(source, canonicalUrl).pathname, "/assets/home/highlights-proof.mp4");
     assert.equal(new URL(fallback, canonicalUrl).pathname, "/assets/home/highlights-poster.jpg");
-    assert.match(html, /CruxCut analyzes video on your iPhone/i);
+    assert.match(html, /CruxCut analyzes video on your phone \(iPhone or Android\)/i);
     assert.match(html, /you choose the moments/i);
     assert.doesNotMatch(html, /uploads? (?:your )?raw (?:climbing )?footage/i);
 });

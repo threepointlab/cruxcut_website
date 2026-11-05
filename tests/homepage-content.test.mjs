@@ -78,7 +78,7 @@ test("publishes parseable application and FAQ structured data", () => {
 
 test("keeps product information available without JavaScript", () => {
     assert.match(html, /Great sends deserve great footage\./);
-    assert.match(html, /Your footage never leaves your iPhone\./);
+    assert.match(html, /Your footage never leaves your phone\./);
     assert.match(html, /href="\/privacy"/);
     assert.doesNotMatch(html, /Questions, answered/);
     assert.doesNotMatch(html, /class="guide-card/);
