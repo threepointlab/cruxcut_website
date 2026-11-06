@@ -32,24 +32,14 @@
     setTimeout(() => el.classList.remove("is-pressed"), 160);
   }, {passive: true});
 
-  // Auto-zoom demo: play both panels together only while visible, keep them in sync.
-  const source = document.querySelector('[data-az-video="source"]');
-  const result = document.querySelector('[data-az-video="result"]');
+  // Auto-zoom demo: play only while visible (the real app recording, or a legacy source/result pair).
+  const demos = [...document.querySelectorAll("[data-az-video]")];
   const stage = document.querySelector(".az-stage");
-  if (source && result && stage) {
-    const play = () => {
-      [source, result].forEach((v) => { if (v.preload !== "auto") { v.preload = "auto"; v.load(); } });
-      Promise.all([source.play(), result.play()]).catch(() => {});
-    };
-    const pause = () => [source, result].forEach((v) => v.pause());
-    let syncTimer;
-    const sync = () => { if (Math.abs(result.currentTime - source.currentTime) > 0.15) result.currentTime = source.currentTime; };
-    source.addEventListener("playing", () => { sync(); clearInterval(syncTimer); syncTimer = setInterval(sync, 1500); });
-    source.addEventListener("pause", () => clearInterval(syncTimer));
-    source.addEventListener("seeked", sync);
-    if (canObserve) {
-      new IntersectionObserver((entries) => entries.forEach((entry) => (entry.isIntersecting ? play() : pause())), {threshold: 0.35}).observe(stage);
-    } else play();
+  if (demos.length && stage) {
+    const play = () => demos.forEach((v) => { if (v.preload !== "auto") { v.preload = "auto"; v.load(); } v.play().catch(() => {}); });
+    const pause = () => demos.forEach((v) => v.pause());
+    if (canObserve) new IntersectionObserver((entries) => entries.forEach((entry) => (entry.isIntersecting ? play() : pause())), {threshold: 0.35}).observe(stage);
+    else play();
   }
 
   // One gentle highlight on the hero store badge once the page settles.

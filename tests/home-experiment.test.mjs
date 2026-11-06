@@ -42,7 +42,7 @@ test("homepages assign a stable 50/50 arm before paint without identifiers", asy
 });
 
 test("auto-zoom demo assets ship within budget", async () => {
-    for (const [p, max] of [["../assets/home/autozoom-source.mp4", 1_000_000], ["../assets/home/autozoom-result.mp4", 2_000_000], ["../assets/home/autozoom-source.jpg", 200_000], ["../assets/home/autozoom-result.jpg", 200_000]]) {
+    for (const [p, max] of [["../assets/home/autozoom-app.mp4", 1_500_000], ["../assets/home/autozoom-app.jpg", 200_000]]) {
         assert.ok((await stat(new URL(p, import.meta.url))).size <= max, p);
     }
 });
