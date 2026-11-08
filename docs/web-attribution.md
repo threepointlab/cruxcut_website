@@ -72,3 +72,6 @@ WHERE index1 = 'web_v2' AND blob9 = 'home_v2' AND blob5 != 'qa' AND timestamp > 
 GROUP BY arm, platform ORDER BY arm, platform
 ```
 Primary metric: store_clicks / pageviews per arm (page-load based, not unique visitors; a click is store intent, not an install). Guardrails: d50 scroll reach, cta_view per placement. Compare arms only within the same period; treat small counts directionally.
+
+## Optional vendors (2026-11-08)
+`assets/home/analytics.js` mirrors the v2 events to Amplitude (web-only project, key in `<meta name="cruxcut-amplitude-key">`) and loads Microsoft Clarity (project id in `<meta name="cruxcut-clarity-id">`). Both are skipped under GPC/DNT; Amplitude IP tracking is disabled. The privacy policy (KO/EN) discloses the A/B localStorage letter, Amplitude and Clarity.

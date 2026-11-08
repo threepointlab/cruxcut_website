@@ -1,10 +1,21 @@
-/* Optional behaviour analytics (Amplitude Browser SDK). Inert until a key is set in
-   <meta name="cruxcut-amplitude-key" content="...">. Receives the same bounded events as the
-   first-party counter via the "cruxcut:track" event, so both systems share one tracking plan. */
+/* Optional behaviour analytics. Amplitude (meta cruxcut-amplitude-key) receives the same bounded
+   events as the first-party counter via "cruxcut:track"; Microsoft Clarity (meta cruxcut-clarity-id)
+   adds heatmaps/session replay. Each stays inert without its id; both are skipped under GPC/DNT. */
 (() => {
-  const key = document.querySelector('meta[name="cruxcut-amplitude-key"]')?.content?.trim();
-  if (!key) return;
   if (navigator.globalPrivacyControl === true || navigator.doNotTrack === "1") return;
+  const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim();
+  const root = document.documentElement.dataset || {};
+  const clarityId = meta("cruxcut-clarity-id");
+  if (clarityId && /^[a-z0-9]{6,20}$/i.test(clarityId)) {
+    window.clarity = window.clarity || function () { (window.clarity.q = window.clarity.q || []).push(arguments); };
+    const c = document.createElement("script");
+    c.async = true; c.src = "https://www.clarity.ms/tag/" + clarityId;
+    document.head.appendChild(c);
+    if (root.exp) window.clarity("set", "home_v2_arm", root.exp);
+    if (root.platform) window.clarity("set", "web_platform", root.platform);
+  }
+  const key = meta("cruxcut-amplitude-key");
+  if (!key) return;
   const queue = [];
   let amp = null;
   const NAMES = {pageview: "Web Page Viewed", click: "Web Store Clicked", cta_view: "Web CTA Viewed", scroll: "Web Scroll Depth"};
@@ -24,7 +35,6 @@
     const sdk = window.amplitude;
     if (!sdk) return;
     sdk.init(key, {autocapture: {pageViews: false, sessions: true, formInteractions: false, fileDownloads: false, elementInteractions: false}, trackingOptions: {ipAddress: false}});
-    const root = document.documentElement.dataset;
     const id = new sdk.Identify();
     if (root.exp) id.set("web_home_v2_arm", root.exp);
     if (root.platform) id.set("web_platform", root.platform);

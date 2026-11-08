@@ -80,13 +80,18 @@ test("behaviour analytics adapter stays inert without a key and maps the shared 
     }
     const {runInNewContext} = await import("node:vm");
     let appended = 0;
-    const doc = (key) => ({querySelector: () => ({content: key}), head: {appendChild: () => { appended++; }}, createElement: () => ({}), documentElement: {lang: "en", dataset: {}}});
-    runInNewContext(src, {document: doc(""), navigator: {}, window: {addEventListener() {}}});
+    const doc = (amp, cla) => ({querySelector: (sel) => ({content: sel.includes("amplitude") ? amp : cla}), head: {appendChild: () => { appended++; }}, createElement: () => ({}), documentElement: {lang: "en", dataset: {exp: "b"}}});
+    runInNewContext(src, {document: doc("", ""), navigator: {}, window: {addEventListener() {}}});
     assert.equal(appended, 0);
-    runInNewContext(src, {document: doc("k"), navigator: {globalPrivacyControl: true}, window: {addEventListener() {}}});
+    runInNewContext(src, {document: doc("k", "abc123xyz"), navigator: {globalPrivacyControl: true}, window: {addEventListener() {}}});
     assert.equal(appended, 0);
-    runInNewContext(src, {document: doc("k"), navigator: {}, window: {addEventListener() {}}});
+    runInNewContext(src, {document: doc("k", ""), navigator: {}, window: {addEventListener() {}}});
     assert.equal(appended, 1);
+    const win = {addEventListener() {}};
+    runInNewContext(src, {document: doc("", "abc123xyz"), navigator: {}, window: win});
+    assert.equal(appended, 2);
+    assert.deepEqual([...win.clarity.q[0]], ["set", "home_v2_arm", "b"]);
+    for (const file of ["../index.html", "../ko/index.html"]) assert.match(await read(file), /<meta name="cruxcut-clarity-id" content="[a-z0-9]*">/);
     assert.match(src, /ipAddress: false/);
     for (const name of ["Web Page Viewed", "Web Store Clicked", "Web CTA Viewed", "Web Scroll Depth"]) assert.ok(src.includes(name));
 });
