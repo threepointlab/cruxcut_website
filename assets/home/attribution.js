@@ -16,6 +16,8 @@
   const send = (event, target = 'none', placement = 'none') => {
    const body = JSON.stringify({v:2,event,source:context.source,campaign:context.campaign,method:context.method,page:core.pageBucket(location.pathname),target,placement,exp,arm,platform});
    try { fetch('/api/attribution-event',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true,credentials:'same-origin'}).catch(() => {}); } catch { /* Never block navigation. */ }
+   // Mirror the same bounded event to an optional behaviour-analytics adapter (analytics.js), if loaded.
+   try { if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') window.dispatchEvent(new CustomEvent('cruxcut:track',{detail:JSON.parse(body)})); } catch { /* Optional. */ }
   };
   window.cruxcutAttribution = {playURL:() => core.playURL(context)};
   const decorate = () => document.querySelectorAll('a[href]').forEach(a => {

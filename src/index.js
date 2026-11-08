@@ -154,32 +154,8 @@ async function hlsMedia(request, env, url) {
     return new Response(request.method === "HEAD" ? null : upstream.body, {headers});
 }
 
-// iOS Safari only plays <video> when the server answers byte-range requests with 206.
-async function rangedVideo(request, env) {
-    const asset = await env.ASSETS.fetch(new Request(request.url, {method: "GET"}));
-    if (!asset.ok) return asset;
-    const bytes = new Uint8Array(await asset.arrayBuffer());
-    const headers = new Headers(asset.headers);
-    headers.set("Accept-Ranges", "bytes");
-    headers.set("Content-Type", "video/mp4");
-    headers.delete("Content-Length");
-    const match = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get("Range") || "");
-    if (!match || (match[1] === "" && match[2] === "")) {
-        headers.set("Content-Length", String(bytes.length));
-        return new Response(request.method === "HEAD" ? null : bytes, {status: 200, headers});
-    }
-    let start, end;
-    if (match[1] === "") { start = Math.max(0, bytes.length - Number(match[2])); end = bytes.length - 1; }
-    else { start = Number(match[1]); end = match[2] === "" ? bytes.length - 1 : Math.min(Number(match[2]), bytes.length - 1); }
-    if (start >= bytes.length || start > end) return new Response(null, {status: 416, headers: {"Content-Range": `bytes */${bytes.length}`, "Accept-Ranges": "bytes"}});
-    headers.set("Content-Range", `bytes ${start}-${end}/${bytes.length}`);
-    headers.set("Content-Length", String(end - start + 1));
-    return new Response(request.method === "HEAD" ? null : bytes.slice(start, end + 1), {status: 206, headers});
-}
-
 async function route(request, env) {
         const url = new URL(request.url);
-        if (/^\/assets\/home\/[a-z0-9_-]+\.mp4$/.test(url.pathname) && (request.method === "GET" || request.method === "HEAD")) return rangedVideo(request, env);
         if (url.pathname.startsWith("/hls/")) return hlsMedia(request, env, url);
         if (url.pathname === '/api/attribution-event') return attributionEvent(request, env);
 

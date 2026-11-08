@@ -73,15 +73,18 @@
   const stage = document.querySelector(".az-stage");
   if (demos.length && stage) {
     demos.forEach((v) => { v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute("playsinline", ""); });
-    const play = () => demos.forEach((v) => {
-      if (v.preload !== "auto") v.preload = "auto";
-      const attempt = v.play();
-      if (attempt?.catch) attempt.catch(() => { stage.classList.add("az-needs-tap"); });
-    });
-    stage.addEventListener("click", () => { stage.classList.remove("az-needs-tap"); demos.forEach((v) => { v.muted = true; v.play().catch(() => {}); }); });
+    // Start buffering well before the section is on screen so playback begins immediately.
+    let warmed = false;
+    const warm = () => { if (warmed) return; warmed = true; demos.forEach((v) => { v.preload = "auto"; v.load(); }); };
+    const play = () => { warm(); demos.forEach((v) => { const attempt = v.play(); if (attempt?.catch) attempt.catch(() => stage.classList.add("az-needs-tap")); }); };
     const pause = () => demos.forEach((v) => v.pause());
-    if (canObserve) new IntersectionObserver((entries) => entries.forEach((entry) => (entry.isIntersecting ? play() : pause())), {threshold: 0.35}).observe(stage);
-    else play();
+    stage.addEventListener("click", () => { stage.classList.remove("az-needs-tap"); demos.forEach((v) => { v.muted = true; v.play().catch(() => {}); }); });
+    if (canObserve) {
+      new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && warm()), {rootMargin: "1200px 0px"}).observe(stage);
+      new IntersectionObserver((entries) => entries.forEach((entry) => (entry.isIntersecting ? play() : pause())), {threshold: 0.2}).observe(stage);
+    } else play();
+    // Also warm after the page settles, for visitors who jump straight down via "See auto zoom".
+    (window.requestIdleCallback || ((fn) => setTimeout(fn, 2500)))(warm);
   }
 
   // One gentle highlight on the hero store badge once the page settles.

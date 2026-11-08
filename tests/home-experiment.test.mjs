@@ -42,7 +42,7 @@ test("homepages assign a stable 50/50 arm before paint without identifiers", asy
 });
 
 test("auto-zoom demo assets ship within budget", async () => {
-    for (const [p, max] of [["../assets/home/autozoom-app.mp4", 1_500_000], ["../assets/home/autozoom-app.jpg", 200_000]]) {
+    for (const [p, max] of [["../assets/home/autozoom-app.jpg", 200_000]]) {
         assert.ok((await stat(new URL(p, import.meta.url))).size <= max, p);
     }
 });
@@ -61,15 +61,32 @@ test("browser client sends v2 payloads with arm/platform and explicit placements
     assert.deepEqual([requests[1].event, requests[1].target, requests[1].placement], ["click", "appstore", "zoom"]);
 });
 
-test("homepage mp4 assets answer byte-range requests (required by iOS Safari)", async () => {
-    const body = new Uint8Array(100).map((_, i) => i);
-    const env = {ASSETS: {fetch: async (r) => new URL(r.url).pathname === "/assets/home/autozoom-app.mp4" ? new Response(body, {headers: {"Content-Type": "video/mp4", ETag: '"x"'}}) : new Response("nf", {status: 404})}};
-    const get = (range) => worker.fetch(new Request(base + "/assets/home/autozoom-app.mp4", {headers: range ? {Range: range} : {}}), env);
-    let r = await get("bytes=0-1");
-    assert.equal(r.status, 206); assert.equal(r.headers.get("Content-Range"), "bytes 0-1/100"); assert.deepEqual([...new Uint8Array(await r.arrayBuffer())], [0, 1]);
-    r = await get("bytes=90-"); assert.equal(r.status, 206); assert.equal(r.headers.get("Content-Length"), "10");
-    r = await get("bytes=-5"); assert.equal(r.headers.get("Content-Range"), "bytes 95-99/100");
-    r = await get(); assert.equal(r.status, 200); assert.equal(r.headers.get("Accept-Ranges"), "bytes");
-    assert.equal((await get("bytes=200-")).status, 416);
-    const config = await read("../wrangler.toml"); assert.match(config, /"\/assets\/home\/\*\.mp4"/);
+test("auto-zoom demo streams a light CDN file and warms it before it is on screen", async () => {
+    for (const file of ["../index.html", "../ko/index.html"]) {
+        const html = await read(file);
+        assert.match(html, /<source src="https:\/\/cdn\.cruxcut\.com\/video\/home\/autozoom-app-v\d+\.mp4" type="video\/mp4">/);
+        assert.match(html, /<link rel="preconnect" href="https:\/\/cdn\.cruxcut\.com">/);
+    }
+    const js = await read("../assets/home/exp.js");
+    assert.match(js, /rootMargin: "1200px 0px"/);
+});
+
+test("behaviour analytics adapter stays inert without a key and maps the shared events", async () => {
+    const src = await read("../assets/home/analytics.js");
+    for (const file of ["../index.html", "../ko/index.html"]) {
+        const html = await read(file);
+        assert.match(html, /<meta name="cruxcut-amplitude-key" content="">/);
+        assert.match(html, /<script defer src="\/assets\/home\/analytics\.js\?v=\d+"><\/script>/);
+    }
+    const {runInNewContext} = await import("node:vm");
+    let appended = 0;
+    const doc = (key) => ({querySelector: () => ({content: key}), head: {appendChild: () => { appended++; }}, createElement: () => ({}), documentElement: {lang: "en", dataset: {}}});
+    runInNewContext(src, {document: doc(""), navigator: {}, window: {addEventListener() {}}});
+    assert.equal(appended, 0);
+    runInNewContext(src, {document: doc("k"), navigator: {globalPrivacyControl: true}, window: {addEventListener() {}}});
+    assert.equal(appended, 0);
+    runInNewContext(src, {document: doc("k"), navigator: {}, window: {addEventListener() {}}});
+    assert.equal(appended, 1);
+    assert.match(src, /ipAddress: false/);
+    for (const name of ["Web Page Viewed", "Web Store Clicked", "Web CTA Viewed", "Web Scroll Depth"]) assert.ok(src.includes(name));
 });
