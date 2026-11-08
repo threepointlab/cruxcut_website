@@ -75,7 +75,7 @@ test("behaviour analytics adapter stays inert without a key and maps the shared 
     const src = await read("../assets/home/analytics.js");
     for (const file of ["../index.html", "../ko/index.html"]) {
         const html = await read(file);
-        assert.match(html, /<meta name="cruxcut-amplitude-key" content="">/);
+        assert.match(html, /<meta name="cruxcut-amplitude-key" content="[0-9a-f]{32}">/);
         assert.match(html, /<script defer src="\/assets\/home\/analytics\.js\?v=\d+"><\/script>/);
     }
     const {runInNewContext} = await import("node:vm");
