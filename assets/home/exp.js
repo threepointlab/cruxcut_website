@@ -5,8 +5,41 @@
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   const canObserve = typeof IntersectionObserver === "function";
 
-  // Let balanced wrapping decide line breaks in shared headings instead of hard <br>s.
-  document.querySelectorAll(".final-cta h2 br, .more-intro h2 br").forEach((br) => br.replaceWith(document.createTextNode(" ")));
+  // Mobile-first headings: each authored line (<br>) stays on one line and the font shrinks to fit,
+  // so phones never get "Follow-cam / edits / Hard to make?". One-word tail lines merge back.
+  // Keep hyphenated product terms on one line (e.g. "on-device", "follow-cam").
+  const walker = document.createTreeWalker(document.querySelector("main") || document.body, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (/\b(on|follow)-(device|cam)\b/i.test(node.nodeValue)) node.nodeValue = node.nodeValue.replace(/\b(on|follow)-(device|cam)\b/gi, "$1\u2011$2");
+  }
+  const fitTargets = [...document.querySelectorAll(".hero-copy-b h1, main h2, .feature-story-copy > p:not(.feature-number)")]
+    .filter((h) => h.querySelector("br") && [...h.children].every((c) => c.tagName === "BR"));
+  const fitted = [];
+  fitTargets.forEach((h) => {
+    const parts = h.innerHTML.split(/<br\s*\/?>/i).map((x) => x.trim()).filter(Boolean);
+    const lines = [];
+    parts.forEach((part) => {
+      const words = part.replace(/<[^>]+>/g, "").trim().split(/\s+/);
+      if (lines.length && words.length === 1 && /^[A-Za-z]{1,8}[.,!?]?$/.test(words[0])) lines[lines.length - 1] += " " + part;
+      else lines.push(part);
+    });
+    if (lines.length < 2) { h.innerHTML = lines.join(" "); return; }
+    h.innerHTML = lines.map((line) => `<span class="fit-line">${line}</span>`).join("");
+    h.classList.add("fit-lines");
+    fitted.push(h);
+  });
+  const fit = () => fitted.forEach((h) => {
+    h.style.fontSize = "";
+    const available = h.clientWidth;
+    const widest = Math.max(...[...h.querySelectorAll(".fit-line")].map((l) => l.scrollWidth));
+    if (available > 0 && widest > available) {
+      const size = parseFloat(getComputedStyle(h).fontSize);
+      h.style.fontSize = `${Math.max(24, Math.floor(size * (available / widest) * 0.92))}px`;
+    }
+  });
+  fit();
+  document.fonts?.ready?.then(fit);
+  let fitTimer; window.addEventListener("resize", () => { clearTimeout(fitTimer); fitTimer = setTimeout(fit, 120); });
 
   // Scroll reveals for calm, non-sticky blocks only (sticky scroll stories keep their own motion).
   const groups = [".az-copy", ".az-stage", ".on-device-copy", ".on-device-points li", ".more-intro > *", ".feature-story-copy", ".trust > *", ".faq-item", ".community .section-shell > *", ".final-cta .section-shell > *"];

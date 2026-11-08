@@ -95,3 +95,9 @@ html[data-exp="b"] .az-copy h2 .nb{display:block}
 .az-phone{transform:translateY(24px) scale(.96)}
 .az-stage-app.is-revealed .az-phone,html:not(.exp-motion) .az-phone{transform:none}
 .az-stage-app.az-needs-tap .az-phone::before{content:"▶";position:absolute;z-index:3;inset:0;display:grid;place-items:center;color:#fff;font-size:54px;background:rgba(0,0,0,.35);cursor:pointer}
+/* Mobile line-break pass */
+.fit-lines .fit-line{display:block;white-space:nowrap}
+html[data-exp="b"] :is(.faq-item summary,.problem-message p,.problem-answer small,.transform-intro p,.feature-story-copy small,.more-intro p,.trust p,.final-cta p,.community p,.on-device-copy p,.workflow-step-overlay p,.carousel-heading p){text-wrap:balance}
+@media(max-width:600px){html[data-exp="b"] .az-copy h2{font-size:clamp(34px,9.4vw,44px)}html[data-exp="b"] .transform-intro p{text-shadow:0 2px 14px rgba(0,0,0,.85)}}
+.fit-lines{contain:inline-size;max-width:100%;min-width:0}
+.fit-lines{width:100%;align-self:stretch;box-sizing:border-box}
