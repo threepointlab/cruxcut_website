@@ -60,3 +60,16 @@ test("browser client sends v2 payloads with arm/platform and explicit placements
     assert.deepEqual([requests[0].v, requests[0].exp, requests[0].arm, requests[0].platform], [2, "home_v2", "b", "android"]);
     assert.deepEqual([requests[1].event, requests[1].target, requests[1].placement], ["click", "appstore", "zoom"]);
 });
+
+test("homepage mp4 assets answer byte-range requests (required by iOS Safari)", async () => {
+    const body = new Uint8Array(100).map((_, i) => i);
+    const env = {ASSETS: {fetch: async (r) => new URL(r.url).pathname === "/assets/home/autozoom-app.mp4" ? new Response(body, {headers: {"Content-Type": "video/mp4", ETag: '"x"'}}) : new Response("nf", {status: 404})}};
+    const get = (range) => worker.fetch(new Request(base + "/assets/home/autozoom-app.mp4", {headers: range ? {Range: range} : {}}), env);
+    let r = await get("bytes=0-1");
+    assert.equal(r.status, 206); assert.equal(r.headers.get("Content-Range"), "bytes 0-1/100"); assert.deepEqual([...new Uint8Array(await r.arrayBuffer())], [0, 1]);
+    r = await get("bytes=90-"); assert.equal(r.status, 206); assert.equal(r.headers.get("Content-Length"), "10");
+    r = await get("bytes=-5"); assert.equal(r.headers.get("Content-Range"), "bytes 95-99/100");
+    r = await get(); assert.equal(r.status, 200); assert.equal(r.headers.get("Accept-Ranges"), "bytes");
+    assert.equal((await get("bytes=200-")).status, 416);
+    const config = await read("../wrangler.toml"); assert.match(config, /"\/assets\/home\/\*\.mp4"/);
+});

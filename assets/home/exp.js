@@ -5,6 +5,9 @@
   const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   const canObserve = typeof IntersectionObserver === "function";
 
+  // Let balanced wrapping decide line breaks in shared headings instead of hard <br>s.
+  document.querySelectorAll(".final-cta h2 br, .more-intro h2 br").forEach((br) => br.replaceWith(document.createTextNode(" ")));
+
   // Scroll reveals for calm, non-sticky blocks only (sticky scroll stories keep their own motion).
   const groups = [".az-copy", ".az-stage", ".on-device-copy", ".on-device-points li", ".more-intro > *", ".feature-story-copy", ".trust > *", ".faq-item", ".community .section-shell > *", ".final-cta .section-shell > *"];
   groups.forEach((selector) => document.querySelectorAll(selector).forEach((el, index) => {
@@ -36,7 +39,13 @@
   const demos = [...document.querySelectorAll("[data-az-video]")];
   const stage = document.querySelector(".az-stage");
   if (demos.length && stage) {
-    const play = () => demos.forEach((v) => { if (v.preload !== "auto") { v.preload = "auto"; v.load(); } v.play().catch(() => {}); });
+    demos.forEach((v) => { v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute("playsinline", ""); });
+    const play = () => demos.forEach((v) => {
+      if (v.preload !== "auto") v.preload = "auto";
+      const attempt = v.play();
+      if (attempt?.catch) attempt.catch(() => { stage.classList.add("az-needs-tap"); });
+    });
+    stage.addEventListener("click", () => { stage.classList.remove("az-needs-tap"); demos.forEach((v) => { v.muted = true; v.play().catch(() => {}); }); });
     const pause = () => demos.forEach((v) => v.pause());
     if (canObserve) new IntersectionObserver((entries) => entries.forEach((entry) => (entry.isIntersecting ? play() : pause())), {threshold: 0.35}).observe(stage);
     else play();
