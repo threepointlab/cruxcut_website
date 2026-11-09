@@ -44,7 +44,7 @@ test('keeps proportional store sizing and language-specific optical Discord size
  const koSizes = [...css.matchAll(/html\[lang="ko"\] \.hero-discord\{font-size:(\d+)px\}/g)].map(m => Number(m[1]));
  assert.deepEqual(koSizes, [17,13]);
  assert.match(css, /white-space:nowrap/);
- assert.match(css, /font-family:"Pretendard Variable",Pretendard,-apple-system/);
+ assert.match(css, /--font-sans:"Pretendard Variable",Pretendard,-apple-system/); assert.match(css, /font-family:var\(--font-sans\)/);
 });
 
 test('coming-soon state has no accidental link underline while remaining in the real anchor', () => {

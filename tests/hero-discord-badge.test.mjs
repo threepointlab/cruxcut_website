@@ -9,7 +9,7 @@ for(const file of ['../index.html','../ko/index.html'])test(`${file} keeps acces
 });
 test('Discord uses black badge, square blurple icon with centered official mark and matching desktop/mobile heights',async()=>{
  const css=await readFile(new URL('../assets/home/home.css',import.meta.url),'utf8');
- assert.match(css,/\.hero-discord\{height:54px;min-height:54px;[^}]*border-radius:7px;background:#000;color:#fff/);
+ assert.match(css,/\.hero-discord\{height:54px;min-height:54px;[^}]*border-radius:7px;background:var\(--black\);color:var\(--white\)/);
  assert.match(css,/\.hero-store-ctas \.hero-discord\{width:auto;height:40px;min-height:40px/);
  const svg=await readFile(new URL('../assets/home/discord-mark.svg',import.meta.url),'utf8');
  assert.match(svg,/viewBox="0 0 64 64"/);

@@ -49,7 +49,7 @@
   }));
   const targets = [...document.querySelectorAll("[data-reveal]")];
   if (!reduce && canObserve) {
-    root.classList.add("exp-motion");
+    root.classList.add("js", "exp-motion");
     const io = new IntersectionObserver((entries) => entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
       entry.target.classList.add("is-revealed");

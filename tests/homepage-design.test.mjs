@@ -44,7 +44,7 @@ const contrastRatio = (first, second) => {
 test("uses one bilingual UI font while preserving the logo treatment", () => {
     assert.match(
         css,
-        /body :not\(\.wordmark,[^}]+\)\{\s*font-family:"Pretendard Variable"/,
+        /body :not\(\.wordmark,[^}]+\)\{\s*font-family:var\(--font-sans\)/,
     );
     assert.match(css, /\.wordmark\{font-style:italic\}/);
 });
@@ -71,7 +71,7 @@ test("keeps the final decorative mark proportional", () => {
 
 test("keeps normal-size CTA text above the AA contrast threshold", () => {
     assert.ok(contrastRatio("#141414", "#e74408") >= 4.5);
-    assert.match(css, /\.button\{color:#141414\}/);
+    assert.match(css, /\.button\{color:var\(--ink\)\}/);
 });
 
 test("gives every autoplay proof an explicit playback control", () => {
