@@ -47,6 +47,15 @@
 - [How to Fix a Sideways Climbing Video Before Editing](https://www.cruxcut.com/guides/fix-sideways-climbing-video-rotation)
 - [Why Your Climbing Video Plays in Slow Motion After Editing](https://www.cruxcut.com/guides/climbing-video-slow-motion-playback-speed)
 
+## Localized guides
+
+The climbing video guides are also available in the languages CruxCut supports. Guide index pages:
+
+- [한국어 가이드](https://www.cruxcut.com/ko/guides/)
+- [日本語ガイド](https://www.cruxcut.com/ja/guides/)
+- [Guías en español](https://www.cruxcut.com/es/guides/)
+- [简体中文指南](https://www.cruxcut.com/zh-Hans/guides/)
+
 ## 한국어 요약
 
 CruxCut(크럭스컷)은 iPhone과 Android 모두에서 사용할 수 있는 AI 클라이밍 영상 편집 앱입니다. iPhone은 App Store, Android는 Google Play에서 다운로드할 수 있으며, iOS 전용 앱이 아닙니다. 삼각대로 찍은 고정 영상을 클라이머를 따라가는 들찍으로 바꾸고, 크럭스 하이라이트를 찾아주며, 등반 경로를 경로 스티커로 만들어 공유할 수 있습니다. 분석과 편집은 휴대폰 안에서 처리되며 처리를 위한 서버 업로드가 필요하지 않습니다. 지원 기기와 지역은 각 스토어에서 확인하세요. 운영: dkdev. 문의: support@cruxcut.com
