@@ -55,3 +55,9 @@ test("guide visits on localized paths are bucketed as guides", async () => {
     for (const L of LANGS) assert.equal(pageBucket(`/${L}/guides/some-guide`), "guides");
     assert.equal(pageBucket("/ko/"), "home_ko");
 });
+
+test("sitemap has no duplicate URLs", () => {
+    const locs = [...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map(m => m[1]);
+    assert.equal(new Set(locs).size, locs.length);
+    assert.equal(locs.filter(u => /\/(ko|ja|es|zh-Hans|fr|de|it|pt|ru|uk|pl|cs|sk|hu|nl|tr|he|th|id|zh-Hant|zh-HK)\/guides/.test(u)).length, 21 * slugs.length);
+});
