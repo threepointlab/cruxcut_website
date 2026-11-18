@@ -36,4 +36,4 @@ export function playURL(context) {
  u.searchParams.set('referrer',new URLSearchParams({utm_source:context.source,utm_campaign:context.campaign,utm_medium:'website'}).toString());
  return u.href;
 }
-export function pageBucket(path) { return (path.startsWith('/guides') || /^\/(ko|ja|es|zh-Hans)\/guides(\/|$)/.test(path)) ? 'guides' : path.startsWith('/download/android') ? 'android' : path === '/ko/' || path === '/ko' ? 'home_ko' : path === '/' ? 'home_en' : 'other'; }
+export function pageBucket(path) { return (path.startsWith('/guides') || /^\/(ko|ja|es|zh-Hans|fr|de|it|pt|ru|uk|pl|cs|sk|hu|nl|tr|he|th|id|zh-Hant|zh-HK)\/guides(\/|$)/.test(path)) ? 'guides' : path.startsWith('/download/android') ? 'android' : path === '/ko/' || path === '/ko' ? 'home_ko' : path === '/' ? 'home_en' : 'other'; }

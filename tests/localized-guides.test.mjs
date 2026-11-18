@@ -3,7 +3,7 @@ import {readFile, readdir} from "node:fs/promises";
 import test from "node:test";
 
 const ORIGIN = "https://www.cruxcut.com";
-const LANGS = ["ko", "ja", "es", "zh-Hans"];
+const LANGS = ["ko", "ja", "es", "zh-Hans", "fr", "de", "it", "pt", "ru", "uk", "pl", "cs", "sk", "hu", "nl", "tr", "he", "th", "id", "zh-Hant", "zh-HK"];
 const read = path => readFile(new URL("../" + path, import.meta.url), "utf8");
 const slugs = (await readdir(new URL("../guides/", import.meta.url))).filter(f => f.endsWith(".html")).map(f => f.slice(0, -5));
 const sitemap = await read("sitemap.xml");
